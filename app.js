@@ -1,13 +1,16 @@
 import * as ti from './lib/taichi.dev.js';
 
-import { getFaceNormal, hitSphere } from './Hittable.js';
-import { rayAt } from './Ray.js';
+import Interval from './Interval.js';
+import Sphere from './Sphere.js';
+import Ray from './Ray.js';
+import Random from './random.js';
 
 await ti.init();
 
 const IMAGE_WIDTH = 512;
 const IMAGE_HEIGHT = 512;
 const CAMERA_CENTER = [0, 0, 0];
+const SAMPLES_PER_PIXEL = 1;
 
 const htmlCanvas = document.getElementById('canvas');
 htmlCanvas.width = IMAGE_WIDTH;
@@ -45,9 +48,16 @@ ti.addToKernelScope({
    IMAGE_WIDTH,
    IMAGE_HEIGHT,
    CAMERA_CENTER,
+   World,
+   WorldLen: World.length,
+   spp: SAMPLES_PER_PIXEL,
    pixels,
    vertices,
    renderTarget,
+   Random,
+   Ray,
+   Interval,
+   Sphere
 });
 
 const get00PixelLoc = () => {
@@ -66,22 +76,29 @@ const get00PixelLoc = () => {
    return [pixel00_loc, pixel_delta_u, pixel_delta_v];
 };
 
-const rayColor = (ray) => {
+const getFaceNormal = (r, outwardNormal) => {
    let result = [0.0, 0.0, 0.0];
-   let closestT = 10000.0;
-   const tempRec = {
-      t: 0.0,
-      p: [0.0, 0.0, 0.0],
-      normal: [0.0, 0.0, 0.0]
-   };
-   let rec = tempRec;
+   const frontFace = dot(r.direction, outwardNormal) < 0;
+   if (frontFace) {
+      result = outwardNormal;
+   } else {
+      result = -outwardNormal;
+   }
+
+   return result;
+};
+
+const worldHit = (r, int, rec) => {
+   const tempRec = rec;
+   let closestT = int.max;
    let hitAny = false;
-   for (let objIndex of ti.Static(ti.range(WorldLen))) {
+
+   for (let objIndex of ti.static(ti.range(WorldLen))) {
       let obj = World[objIndex];
       let hit = false;
 
       if (obj.type === 1) {
-         hit = hitSphere(obj.center, obj.radius, ray, 0.0, closestT, tempRec);
+         hit = Sphere.hit(obj.center, obj.radius, r, Interval.get(int.min, closestT), tempRec);
       }
 
       if (hit) {
@@ -91,20 +108,30 @@ const rayColor = (ray) => {
       }
    }
 
-   if (hitAny) {
-      result = 0.5 * (rec.normal + [1, 1, 1]);
-   } else {
-      const unit_direction = ti.normalized(ray.direction);
-      const a = 0.5 * (unit_direction.y + 1.0);
-      result = (1.0 - a) * [1.0, 1.0, 1.0] + a * [0.5, 0.7, 1.0];
-   }
-
-   return result;
+   return hitAny;
 };
 
-ti.addToKernelScope({ World, WorldLen: World.length, get00PixelLoc, getFaceNormal, rayAt, rayColor, hitSphere });
+const sampleSquare = (i, j, rnd) => {
+   return [Random.randDouble(i, j, rnd) - 0.5, Random.randDouble(i, j, rnd) - 0.5, 0];
+};
+
+const gammaCorrect = (color) => {
+   const intensity = Interval.get(0.0, 0.999);
+   return [Interval.clamp(intensity, color.r), Interval.clamp(intensity, color.g), Interval.clamp(intensity, color.b)];
+};
+
+ti.addToKernelScope({
+   get00PixelLoc,
+   getFaceNormal,
+   worldHit,
+   gammaCorrect,
+   sampleSquare
+});
 
 const pipeline = ti.kernel(() => {
+   const pixel_samples_scale = 1.0 / spp;
+   const rnd = [ti.random(), ti.random()];
+
    // rect from 2 tri's
    ti.clearColor(renderTarget, [0.0, 0.0, 0.0, 1.0]);
    for (let v of ti.inputVertices(vertices)) {
@@ -119,19 +146,17 @@ const pipeline = ti.kernel(() => {
       const coord = (f + 1) / 2.0;
       let x = coord.x * IMAGE_WIDTH;
       let y = coord.y * IMAGE_HEIGHT;
+      let color = [0.0, 0.0, 0.0];
 
-      const pixel_info = get00PixelLoc();
+      for (let _ of ti.static(ti.range(spp))) {
+         let ray = Ray.get(x, y, rnd);
+         color += Ray.getColor(ray);
+      }
 
-      let ray = {
-         origin: CAMERA_CENTER,
-         direction: pixel_info[0] + x * pixel_info[1] + y * pixel_info[2]
-      };
-
-      let color = rayColor(ray);
-      ti.outputColor(renderTarget, [color.rgb, 1]);
+      ti.outputColor(renderTarget, [gammaCorrect(color * pixel_samples_scale).rgb, 1]);
    }
 
-   return get00PixelLoc();
+   return Random.randDouble(0, 0, rnd);
 });
 
 console.log(await pipeline());
