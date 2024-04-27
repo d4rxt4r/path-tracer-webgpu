@@ -12,7 +12,7 @@ await ti.init();
 const IMAGE_WIDTH = 512;
 const IMAGE_HEIGHT = 256;
 const CAMERA_CENTER = [0, 0, 0];
-const SAMPLES_PER_PIXEL = 1;
+const MAX_SAMPLES = 100;
 const MAX_DEPTH = 50;
 
 const htmlCanvas = document.getElementById('canvas');
@@ -22,6 +22,7 @@ htmlCanvas.width = IMAGE_WIDTH;
 htmlCanvas.height = IMAGE_HEIGHT;
 htmlCanvas.style.zoom = '1.5';
 
+const colorBuffer = ti.Vector.field(3, ti.f32, [IMAGE_WIDTH, IMAGE_HEIGHT]);
 const imageBuffer = ti.Vector.field(4, ti.f32, [IMAGE_WIDTH, IMAGE_HEIGHT]);
 
 // Object types:
@@ -68,7 +69,7 @@ ti.addToKernelScope({
    MAX_DEPTH,
    World,
    WorldLen: World.length,
-   spp: SAMPLES_PER_PIXEL,
+   colorBuffer,
    imageBuffer,
    renderTarget,
    Hittable,
@@ -118,23 +119,12 @@ const worldHit = (r, int, rec) => {
    return hitAny;
 };
 
-const sampleSquare = () => {
-   return [ti.random() - 0.5, ti.random() - 0.5, 0.0];
-};
-
-const linear_to_gamma = (linear_component) => {
-   let result = 0.0;
-   if (linear_component > 0) result = ti.sqrt(linear_component);
-
-   return result;
-};
-
 const gammaCorrect = (color) => {
    const intensity = Interval.get(0.0, 0.999);
    return [
-      Interval.clamp(intensity, linear_to_gamma(color.r)),
-      Interval.clamp(intensity, linear_to_gamma(color.g)),
-      Interval.clamp(intensity, linear_to_gamma(color.b)),
+      Interval.clamp(intensity, ti.sqrt(color.r)),
+      Interval.clamp(intensity, ti.sqrt(color.g)),
+      Interval.clamp(intensity, ti.sqrt(color.b)),
       1.0
    ];
 };
@@ -142,34 +132,35 @@ const gammaCorrect = (color) => {
 ti.addToKernelScope({
    get00PixelLoc,
    worldHit,
-   linear_to_gamma,
-   gammaCorrect,
-   sampleSquare
+   gammaCorrect
+});
+
+const toneMap = ti.kernel((total_samples) => {
+   for (const I of ndrange(IMAGE_WIDTH, IMAGE_HEIGHT)) {
+      imageBuffer[I] = gammaCorrect(colorBuffer[I] / total_samples);
+   }
 });
 
 const render = ti.kernel(() => {
-   const pixel_samples_scale = 1.0 / spp;
-
    for (let UV of ti.ndrange(IMAGE_WIDTH, IMAGE_HEIGHT)) {
-      let color = [0.0, 0.0, 0.0];
       let x = UV[0];
       let y = UV[1];
-
-      for (let _ of ti.static(ti.range(spp))) {
-         let ray = Ray.get(x, y);
-         color += Ray.getColor(ray);
-      }
-
-      imageBuffer[UV] = gammaCorrect(color * pixel_samples_scale);
+      let ray = Ray.get(x, y);
+      colorBuffer[UV] += Ray.getColor(ray);
    }
 
    return Random.vec3_2(-1, 1);
 });
 
+let total_samples = 0;
 const main = async () => {
-   console.log(await render());
+   render();
+   total_samples += 1;
+   toneMap(total_samples);
    canvas.setImage(imageBuffer);
-   // requestAnimationFrame(main);
+   if (total_samples < MAX_SAMPLES) {
+      requestAnimationFrame(main);
+   }
 };
 
 await main();

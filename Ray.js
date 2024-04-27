@@ -12,7 +12,7 @@ const _ = (origin, direction) => {
 
 const get = (i, j) => {
    const pixel_info = get00PixelLoc();
-   const offset = sampleSquare();
+   const offset = Random.sample_square();
    const pixel_sample = pixel_info[0] + (i + offset.x) * pixel_info[1] + (j + offset.y) * pixel_info[2];
 
    const ray_origin = CAMERA_CENTER;

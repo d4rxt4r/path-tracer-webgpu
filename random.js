@@ -24,6 +24,10 @@ const in_unit_sphere = () => {
 
 const unit_vector = () => normalized(Random.in_unit_sphere());
 
+const sample_square = () => {
+   return [ti.random() - 0.5, ti.random() - 0.5, 0.0];
+};
+
 const near_zero = (vec) => {
    // Return true if the vector is close to zero in all dimensions.
    const s = 1e-8;
@@ -48,6 +52,7 @@ export default {
    unit_vector,
    near_zero,
    reflect,
+   sample_square,
    in_unit_sphere,
    on_hemisphere
 };
