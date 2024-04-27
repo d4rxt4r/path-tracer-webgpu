@@ -5,15 +5,14 @@ const HitRec = ti.types.struct({
 });
 
 const getFaceNormal = (r, outwardNormal) => {
-   let result = [0.0, 0.0, 0.0];
+   let result = outwardNormal;
    const frontFace = dot(r.direction, outwardNormal) < 0;
-   if (frontFace) {
-      result = outwardNormal;
-   } else {
+
+   if (!frontFace) {
       result = -outwardNormal;
    }
 
    return result;
 };
 
-export { HitRec, getFaceNormal };
+export default { type: HitRec, getFaceNormal };

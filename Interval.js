@@ -3,7 +3,7 @@ const type = ti.types.struct({
    max: ti.f32
 });
 
-const get = (min, max) => ({ min, max });
+const get = (min, max) => ({ min: f32(min), max: f32(max) });
 const size = (int) => int.max - int.min;
 const contains = (int, x) => int.min <= x && x <= int.max;
 const surrounds = (int, x) => int.min < x && x < int.max;
