@@ -36,27 +36,28 @@ const getColor = (ray) => {
    };
 
    let int = Interval.get(0.001, 1000.0);
-   let rec = {
-      t: 0.0,
-      p: [0.0, 0.0, 0.0],
-      normal: [0.0, 0.0, 0.0],
-      // mat
-      scatter: false,
-      attenuation: [0.0, 0.0, 0.0],
-      scattered: Ray._([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
-   };
-
    while (depth < MAX_DEPTH) {
+      let rec = {
+         t: 0.0,
+         p: [0.0, 0.0, 0.0],
+         normal: [0.0, 0.0, 0.0],
+         front_face: false,
+         // mat
+         scatter: false,
+         attenuation: [0.0, 0.0, 0.0],
+         scattered: Ray._([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+      };
+
       if (worldHit(curRay, int, rec)) {
          if (rec.scatter) {
             curRay = rec.scattered;
             if (hits) {
-               result = rec.attenuation * result;
+               result *= rec.attenuation;
             } else {
                result = rec.attenuation;
             }
          } else {
-            result = rec.attenuation;
+            result *= [0.0, 0.0, 0.0];
          }
 
          hits += 1;
@@ -70,14 +71,11 @@ const getColor = (ray) => {
          } else {
             result = bg_color;
          }
+
          break;
       }
 
       depth += 1;
-   }
-
-   if (hits) {
-      result = result / hits;
    }
 
    return result;

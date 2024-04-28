@@ -27,12 +27,10 @@ const hit = (sphere, r, int, rec) => {
 
       rec.t = root;
       rec.p = Ray.at(r, root);
-      rec.normal = Hittable.getFaceNormal(r, (rec.p - sphere.center) / sphere.radius);
 
-      if (!Material.scatter(sphere, r, rec)) {
-         rec.attenuation = [0.0, 0.0, 0.0];
-         rec.scattered = Ray._([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]);
-      }
+      const outward_normal = (rec.p - sphere.center) / sphere.radius;
+      Hittable.getFaceNormal(r, rec, outward_normal);
+      Material.scatter(sphere, r, rec);
    }
 
    return result;

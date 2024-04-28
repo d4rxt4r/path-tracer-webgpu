@@ -9,11 +9,16 @@ import Material from './Material.js';
 
 await ti.init();
 
+const PI = Math.PI;
 const IMAGE_WIDTH = 512;
 const IMAGE_HEIGHT = 256;
-const CAMERA_CENTER = [0, 0, 0];
 const MAX_SAMPLES = 100;
 const MAX_DEPTH = 50;
+const V_FOV = 20;
+const LOOK_FROM = [-2, 2, 1];
+const LOOK_AT = [0, 0, -1];
+const V_UP = [0, 1, 0];
+const CAMERA_CENTER = LOOK_FROM;
 
 const htmlCanvas = document.getElementById('canvas');
 const renderTarget = ti.canvasTexture(htmlCanvas);
@@ -32,6 +37,7 @@ const World = [
    {
       type: 1,
       mat: 0,
+      mat_props: [0.0, 0.0, 0.0],
       albedo: [0.8, 0.8, 0.0],
       center: [0, -100.5, -1],
       radius: 100
@@ -40,22 +46,34 @@ const World = [
    {
       type: 1,
       mat: 0,
-      albedo: [0.1, 0.2, 0.5],
+      mat_props: [0.0, 0.0, 0.0],
+      albedo: [0.8, 0.2, 0.5],
       center: [0, 0, -1.2],
       radius: 0.5
    },
    // left sphere
    {
       type: 1,
-      mat: 1,
-      albedo: [0.8, 0.8, 0.8],
+      mat: 2,
+      mat_props: [1.5, 0.0, 0.0],
+      albedo: [1.0, 1.0, 1.0],
       center: [-1, 0, -1],
       radius: 0.5
+   },
+   // left inside sphere
+   {
+      type: 1,
+      mat: 2,
+      mat_props: [1.0 / 1.5, 0.0, 0.0],
+      albedo: [0.8, 0.8, 0.8],
+      center: [-1, 0, -1],
+      radius: 0.4
    },
    // right sphere
    {
       type: 1,
       mat: 1,
+      mat_props: [0.3, 0.0, 0.0],
       albedo: [0.8, 0.6, 0.2],
       center: [1, 0, -1],
       radius: 0.5
@@ -63,6 +81,11 @@ const World = [
 ];
 
 ti.addToKernelScope({
+   PI,
+   V_FOV,
+   LOOK_FROM,
+   LOOK_AT,
+   V_UP,
    IMAGE_WIDTH,
    IMAGE_HEIGHT,
    CAMERA_CENTER,
@@ -80,17 +103,28 @@ ti.addToKernelScope({
    Material
 });
 
+const degrees_to_radians = (degrees) => {
+   return (degrees * PI) / 180;
+};
+
 const get00PixelLoc = () => {
-   const focal_length = 1.0;
-   const viewport_height = 2.0;
+   const focal_length = norm(LOOK_FROM - LOOK_AT);
+   const theta = degrees_to_radians(V_FOV);
+   const h = tan(theta / 2);
+   const viewport_height = 2 * h * focal_length;
    const viewport_width = viewport_height * (IMAGE_WIDTH / IMAGE_HEIGHT);
-   const viewport_u = [viewport_width, 0.0, 0.0];
-   const viewport_v = [0.0, viewport_height, 0.0];
+
+   const w = normalized(LOOK_FROM - LOOK_AT);
+   const u = normalized(cross(V_UP, w));
+   const v = cross(w, u);
+
+   const viewport_u = viewport_width * u;
+   const viewport_v = viewport_height * v;
 
    const pixel_delta_u = viewport_u / IMAGE_WIDTH;
    const pixel_delta_v = viewport_v / IMAGE_HEIGHT;
 
-   const viewport_upper_left = CAMERA_CENTER - [0.0, 0.0, focal_length] - viewport_u / 2 - viewport_v / 2;
+   const viewport_upper_left = CAMERA_CENTER - focal_length * w - viewport_u / 2 - viewport_v / 2;
    const pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
    return [pixel00_loc, pixel_delta_u, pixel_delta_v];
@@ -130,6 +164,7 @@ const gammaCorrect = (color) => {
 };
 
 ti.addToKernelScope({
+   degrees_to_radians,
    get00PixelLoc,
    worldHit,
    gammaCorrect
@@ -148,8 +183,6 @@ const render = ti.kernel(() => {
       let ray = Ray.get(x, y);
       colorBuffer[UV] += Ray.getColor(ray);
    }
-
-   return Random.vec3_2(-1, 1);
 });
 
 let total_samples = 0;
