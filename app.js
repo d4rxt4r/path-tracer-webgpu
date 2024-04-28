@@ -4,7 +4,7 @@ import Hittable from './Hittable.js';
 import Interval from './Interval.js';
 import Sphere from './Sphere.js';
 import Ray from './Ray.js';
-import Random from './Random.js';
+import Random from './Random2.js';
 import Material from './Material.js';
 
 await ti.init();
