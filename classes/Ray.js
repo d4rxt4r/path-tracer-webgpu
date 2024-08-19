@@ -3,6 +3,7 @@ import { hit_scene } from "./Scene.js";
 // import { random_on_hemisphere_vec3, random_unit_vec3 } from "./Vector.js";
 import { MAX_F32 } from "../const.js";
 import { material_scatter } from "./Material.js";
+import { random_in_unit_disk_vec3 } from "./Vector.js";
 
 /**
  * @typedef Ray
@@ -23,6 +24,12 @@ const sample_square = () => {
     return [ti.random() - 0.5, ti.random() - 0.5];
 }
 
+const defocus_disk_sample = (camera_settings) => {
+    // Returns a random point in the camera defocus disk.
+    const p = random_in_unit_disk_vec3();
+    return camera_settings.camera_center + (p[0] * camera_settings.defocus_disk_u) + (p[1] * camera_settings.defocus_disk_v);
+}
+
 const get_ray = (i, j, camera_settings) => {
     // Construct a camera ray originating from the origin and directed at randomly sampled
     // point around the pixel location i, j.
@@ -31,7 +38,10 @@ const get_ray = (i, j, camera_settings) => {
         + ((i + offset.x) * camera_settings.pixel_delta_u)
         + ((j + offset.y) * camera_settings.pixel_delta_v);
 
-    const ray_origin = camera_settings.camera_center;
+    let ray_origin = ti.f32(camera_settings.camera_center);
+    if (camera_settings.defocus_angle > 0) {
+        ray_origin = defocus_disk_sample(camera_settings);
+    }
     const ray_direction = pixel_sample - ray_origin;
 
     const ray = {
@@ -94,6 +104,7 @@ const ray_color = (ray, max_depth) => {
 export {
     get_ray,
     sample_square,
+    defocus_disk_sample,
     ray_at,
     get_bg_color,
     ray_color

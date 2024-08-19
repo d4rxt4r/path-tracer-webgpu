@@ -2,22 +2,24 @@ import * as ti from "../lib/taichi.js";
 import { degrees_to_radians } from "./Math.js";
 
 const initialize_camera = (image_width, image_height) => {
-    const samples_per_pixel = 50;
+    const samples_per_pixel = 100;
     const max_depth = 50;
     const pixel_samples_scale = 1.0 / samples_per_pixel;
 
     // Determine viewport dimensions.
     const vfov = 20;              // Vertical view angle (field of view)
-    const lookfrom = [13, 2, 3];   // Point camera is looking from
-    const lookat = [0, 0, 0];  // Point camera is looking at
+    const lookfrom = [-2, 2, 1];   // Point camera is looking from
+    const lookat = [0, 0, -1];  // Point camera is looking at
     const vup = [0, 1, 0];     // Camera-relative "up" direction
 
+    const defocus_angle = 10.0;  // Variation angle of rays through each pixel
+    const focus_dist = 3.4;    // Distance from camera lookfrom point to plane of perfect focus
+
     const camera_center = lookfrom;
-    const focal_length = (lookfrom - lookat).norm();
 
     const theta = degrees_to_radians(vfov);
     const h = Math.tan(theta / 2);
-    const viewport_height = 2.0 * h * focal_length;
+    const viewport_height = 2 * h * focus_dist;
     const viewport_width = viewport_height * (image_width / image_height);
 
     // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
@@ -34,26 +36,25 @@ const initialize_camera = (image_width, image_height) => {
     const pixel_delta_v = viewport_v / image_height;
 
     // Calculate the location of the upper left pixel.
-    const viewport_upper_left = camera_center - (focal_length * w) - viewport_u / 2 - viewport_v / 2;
+    const viewport_upper_left = camera_center - (focus_dist * w) - viewport_u / 2 - viewport_v / 2;
     const pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
+    const defocus_radius = focus_dist * ti.tan(degrees_to_radians(defocus_angle / 2));
+    const defocus_disk_u = u * defocus_radius;
+    const defocus_disk_v = v * defocus_radius;
+
     return {
-        focal_length,
-        viewport_height,
-        viewport_width,
         camera_center,
-        viewport_u,
-        viewport_v,
         pixel_delta_u,
         pixel_delta_v,
         viewport_upper_left,
         pixel00_loc,
-        image_height,
-        image_width,
         samples_per_pixel,
         pixel_samples_scale,
         max_depth,
-        vfov,
+        defocus_angle,
+        defocus_disk_u,
+        defocus_disk_v,
     };
 }
 

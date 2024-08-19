@@ -3,7 +3,7 @@ await ti.init();
 
 import { EPS, MAX_F32, OBJ_TYPE, MAT_TYPE } from './const.js';
 import { clamp, linear_to_gamma, degrees_to_radians } from "./classes/Math.js";
-import { ray_at, get_bg_color, ray_color, get_ray, sample_square } from "./classes/Ray.js";
+import { ray_at, get_bg_color, ray_color, get_ray, sample_square, defocus_disk_sample } from "./classes/Ray.js";
 import { Scene, init_scene, hit_scene } from "./classes/Scene.js";
 import {
     Materials,
@@ -24,6 +24,7 @@ import {
     random_range_vec3,
     random_in_unit_sphere_vec3,
     random_on_hemisphere_vec3,
+    random_in_unit_disk_vec3,
     near_zero_vec3,
     reflect_vec3,
     refract_vec3,
@@ -54,6 +55,7 @@ ti.addToKernelScope({
     // Ray
     get_ray,
     sample_square,
+    defocus_disk_sample,
     ray_at,
     get_bg_color,
     ray_color,
@@ -73,6 +75,7 @@ ti.addToKernelScope({
     random_unit_vec3,
     random_in_unit_sphere_vec3,
     random_on_hemisphere_vec3,
+    random_in_unit_disk_vec3,
     near_zero_vec3,
     reflect_vec3,
     refract_vec3,
@@ -82,7 +85,7 @@ ti.addToKernelScope({
     degrees_to_radians,
 });
 
-await init_scene(scene_2, scene_2_mat);
+await init_scene(scene_1, scene_1_mat);
 ti.addToKernelScope({ Scene, Materials });
 
 const render = ti.kernel(() => {

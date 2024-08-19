@@ -74,6 +74,18 @@ const random_on_hemisphere_vec3 = (normal) => {
     return res;
 }
 
+const random_in_unit_disk_vec3 = () => {
+    let res = [0.0, 0.0, 0.0];
+    while (true) {
+        const p = [random_range_f32(-1, 1), random_range_f32(-1, 1), 0];
+        if (p.normSqr() < 1) {
+            res = p;
+            break;
+        }
+    }
+    return res;
+}
+
 const reflect_vec3 = (v, n) => {
     return v - 2 * ti.dot(v, n) * n;
 }
@@ -96,6 +108,7 @@ export {
     random_in_unit_sphere_vec3,
     random_unit_vec3,
     random_on_hemisphere_vec3,
+    random_in_unit_disk_vec3,
     near_zero_vec3,
     reflect_vec3,
     refract_vec3
