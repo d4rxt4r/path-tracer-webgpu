@@ -1,17 +1,23 @@
-import * as ti from "../lib/taichi.js";
-import { ray_at } from "./Ray.js";
-import { set_face_normal } from "./Hittable.js";
+import * as ti from '../lib/taichi.js';
+import { ray_at } from './Ray.js';
+import { set_face_normal } from './Hittable.js';
+import { interval_surrounds } from './Interval.js';
 
 /**
- * @param {import('./Vector').vec3} center
- * @param {number} radius
+ * @typedef Sphere
+ * @property {import('./Vector').vec3} center
+ * @property {number} radius
+ * @property {number} mat
+ */
+
+/**
+ * @param {Sphere} sphere
  * @param {import('./Ray').Ray} r
- * @param {number} ray_tmin
- * @param {number} ray_tmax
+ * @param {import('./Interval.js').Interval} ray_t
  * @param {import('./Hittable.js').HitRecord} rec
  * @returns {boolean}
  */
-const hit_sphere = (sphere, r, ray_tmin, ray_tmax, rec) => {
+const hit_sphere = (sphere, r, ray_t, rec) => {
     const oc = sphere.center - r.origin;
     const a = ti.normSqr(r.direction);
     const h = ti.dot(r.direction, oc);
@@ -27,10 +33,9 @@ const hit_sphere = (sphere, r, ray_tmin, ray_tmax, rec) => {
     const sqrtd = Math.sqrt(discriminant);
 
     let root = (h - sqrtd) / a;
-    if (root <= ray_tmin || ray_tmax <= root) {
+    if (!interval_surrounds(root, ray_t)) {
         root = (h + sqrtd) / a;
-        if (root <= ray_tmin || ray_tmax <= root)
-            res = false;
+        if (!interval_surrounds(root, ray_t)) res = false;
     }
 
     if (res) {
@@ -42,8 +47,6 @@ const hit_sphere = (sphere, r, ray_tmin, ray_tmax, rec) => {
     }
 
     return res;
-}
+};
 
-export {
-    hit_sphere
-}
+export { hit_sphere };

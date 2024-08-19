@@ -1,5 +1,6 @@
-import * as ti from "../lib/taichi.js";
-import { EPS } from "../const.js";
+import * as ti from '../lib/taichi.js';
+import { EPS } from '../const.js';
+import { random_f32 } from './Math.js';
 
 /**
  * @typedef vec3
@@ -41,15 +42,13 @@ class VectorFactory {
     }
 }
 
-const random_range_f32 = (min, max) => min + (max - min) * ti.random();
-
 const random_vec3 = () => {
-    return [ti.random(), ti.random(), ti.random()]
-}
+    return [ti.random(), ti.random(), ti.random()];
+};
 
 const random_range_vec3 = (min, max) => {
-    return [random_range_f32(min, max), random_range_f32(min, max), random_range_f32(min, max)]
-}
+    return [random_f32(min, max), random_f32(min, max), random_f32(min, max)];
+};
 
 const random_in_unit_sphere_vec3 = () => {
     let res = [0.0, 0.0, 0.0];
@@ -61,7 +60,7 @@ const random_in_unit_sphere_vec3 = () => {
         }
     }
     return res;
-}
+};
 
 const random_unit_vec3 = () => ti.normalized(random_in_unit_sphere_vec3());
 
@@ -72,37 +71,37 @@ const random_on_hemisphere_vec3 = (normal) => {
         res = on_unit_sphere;
     }
     return res;
-}
+};
 
 const random_in_unit_disk_vec3 = () => {
     let res = [0.0, 0.0, 0.0];
     while (true) {
-        const p = [random_range_f32(-1, 1), random_range_f32(-1, 1), 0];
+        const p = [random_f32(-1, 1), random_f32(-1, 1), 0];
         if (p.normSqr() < 1) {
             res = p;
             break;
         }
     }
     return res;
-}
+};
 
 const reflect_vec3 = (v, n) => {
     return v - 2 * ti.dot(v, n) * n;
-}
+};
 
 const refract_vec3 = (uv, n, etai_over_etat) => {
     const cos_theta = ti.min(ti.dot(-uv, n), 1.0);
     const r_out_perp = etai_over_etat * (uv + cos_theta * n);
     const r_out_parallel = -Math.sqrt(ti.abs(1.0 - r_out_perp.normSqr())) * n;
     return r_out_perp + r_out_parallel;
-}
+};
 
 const near_zero_vec3 = (vec) => {
-    return (ti.abs(vec.x) < EPS) && (ti.abs(vec.y) < EPS) && (ti.abs(vec.z) < EPS);
-}
+    return ti.abs(vec.x) < EPS && ti.abs(vec.y) < EPS && ti.abs(vec.z) < EPS;
+};
 
 export {
-    random_range_f32,
+    random_f32,
     random_vec3,
     random_range_vec3,
     random_in_unit_sphere_vec3,
@@ -111,7 +110,7 @@ export {
     random_in_unit_disk_vec3,
     near_zero_vec3,
     reflect_vec3,
-    refract_vec3
-}
+    refract_vec3,
+};
 
 export default VectorFactory;

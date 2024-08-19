@@ -1,6 +1,6 @@
-import { OBJ_TYPE, MAT_TYPE } from "./const.js";
-import { random } from './classes/Math.js';
-import VectorFactory from "./classes/Vector.js";
+import { OBJ_TYPE, MAT_TYPE } from './const.js';
+import { random_f32 } from './classes/Math.js';
+import VectorFactory from './classes/Vector.js';
 
 const vf = new VectorFactory();
 
@@ -35,7 +35,7 @@ const scene_1 = [
         radius: 0.5,
         mat: 4,
     },
-]
+];
 
 const scene_1_mat = [
     {
@@ -51,19 +51,19 @@ const scene_1_mat = [
     {
         type: MAT_TYPE.DIELECTRIC,
         attenuation: [1.0, 1.0, 1.0],
-        k: 1.5,
+        k: 2,
     },
     {
         type: MAT_TYPE.DIELECTRIC,
         attenuation: [1.0, 1.0, 1.0],
-        k: 1.0 / 1.5,
+        k: 1.0 / 2,
     },
     {
         type: MAT_TYPE.METAL,
         attenuation: [0.8, 0.6, 0.2],
-        k: 1.0,
-    }
-]
+        k: 0.0,
+    },
+];
 
 const scene_2 = [
     {
@@ -113,7 +113,7 @@ const scene_2_mat = [
         attenuation: [0.7, 0.6, 0.5],
         k: 0,
     },
-]
+];
 
 for (let a = -11; a < 11; a++) {
     for (let b = -11; b < 11; b++) {
@@ -137,8 +137,8 @@ for (let a = -11; a < 11; a++) {
                 });
             } else if (choose_mat < 0.95) {
                 // metal
-                const albedo = [random(0.5, 1), random(0.5, 1), random(0.5, 1)];
-                const fuzz = random(0, 0.5);
+                const albedo = [random_f32(0.5, 1), random_f32(0.5, 1), random_f32(0.5, 1)];
+                const fuzz = random_f32(0, 0.5);
                 scene_2_mat.push({
                     type: MAT_TYPE.METAL,
                     attenuation: albedo,
@@ -168,9 +168,4 @@ for (let a = -11; a < 11; a++) {
     }
 }
 
-export {
-    scene_1,
-    scene_1_mat,
-    scene_2,
-    scene_2_mat,
-}
+export { scene_1, scene_1_mat, scene_2, scene_2_mat };

@@ -1,4 +1,4 @@
-import * as ti from "../lib/taichi.js";
+import * as ti from '../lib/taichi.js';
 
 /**
  * @typedef HitRecord
@@ -25,7 +25,7 @@ const set_face_normal = (rec, r, outward_normal) => {
         rec.front_face = false;
         rec.normal = -outward_normal;
     }
-}
+};
 
 const Hittable = ti.types.struct({
     type: ti.i32,
@@ -34,7 +34,4 @@ const Hittable = ti.types.struct({
     mat: ti.i32,
 });
 
-export {
-    Hittable,
-    set_face_normal
-}
+export { Hittable, set_face_normal };
