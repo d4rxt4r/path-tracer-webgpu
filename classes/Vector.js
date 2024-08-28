@@ -13,32 +13,80 @@ import { random_f32 } from './Math.js';
  */
 
 class VectorFactory {
+    /**
+     * @returns {vec3}
+     */
     add(a, b) {
         return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
     }
 
+    /**
+     * @returns {vec3}
+     */
     sub(a, b) {
         return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
     }
 
+    /**
+     * @returns {vec3}
+     */
     mul(a, b) {
         return [a[0] * b[0], a[1] * b[1], a[2] * b[2]];
     }
 
+    /**
+     * @returns {vec3}
+     */
     dot(a, b) {
         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
     }
 
+    /**
+     * @param {vec3} a
+     * @param {number} val
+     * @returns {vec3}
+     */
     addVal(a, val) {
-        return [a[0] + val, a[1] + val, a[2] + val];
+        return this.add(a, [val, val, val]);
     }
 
+    /**
+     * @returns {vec3}
+     */
     scale(a, factor) {
         return [a[0] * factor, a[1] * factor, a[2] * factor];
     }
 
+    /**
+     * @returns {number}
+     */
     length(a) {
-        return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+        return Math.sqrt(this.lengthSqr(a));
+    }
+
+    /**
+     * @returns {vec3}
+     */
+    lengthSqr(a) {
+        return a[0] * a[0] + a[1] * a[1] + a[2] * a[2];
+    }
+
+    /**
+     * @returns {vec3}
+     */
+    normalized(a) {
+        const len = this.length(a);
+        if (len > EPS) {
+            return [a[0] / len, a[1] / len, a[2] / len];
+        }
+        return a;
+    }
+
+    /**
+     * @returns {vec3}
+     */
+    cross(a, b) {
+        return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
     }
 }
 

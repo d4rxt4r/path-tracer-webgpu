@@ -16,7 +16,8 @@ import {
 } from './classes/Material.js';
 import { set_face_normal } from './classes/Hittable.js';
 import { hit_sphere } from './classes/Sphere.js';
-import { initialize_camera } from './classes/Camera.js';
+import { CameraSettingCPU, initialize_camera, get_camera_settings } from './classes/Camera.js';
+// eslint-disable-next-line no-unused-vars
 import { scene_1, scene_1_mat, scene_2, scene_2_mat } from './scenes.js';
 import {
     random_unit_vec3,
@@ -29,7 +30,10 @@ import {
     refract_vec3,
 } from './classes/Vector.js';
 import { get_interval, interval_clamp, interval_surrounds } from './classes/Interval.js';
+import { createGui } from './classes/GUI.js';
 
+let total_samples = 0;
+let camera_moving = false;
 const aspectRatio = 16.0 / 9.0;
 const image_width = 800;
 const image_height = Number.parseInt(image_width / aspectRatio);
@@ -52,6 +56,7 @@ ti.addToKernelScope({
     image_width,
     colorBuffer,
     pixelsBuffer,
+    total_samples,
     // Camera
     initialize_camera,
     // Ray
@@ -92,17 +97,22 @@ ti.addToKernelScope({
     degrees_to_radians,
 });
 
-await init_scene(scene_2, scene_2_mat);
+await init_scene(scene_1, scene_1_mat);
 ti.addToKernelScope({ Scene, Materials });
 
-const render = ti.kernel(() => {
-    const camera_settings = initialize_camera(image_width, image_height);
+const render = ti.kernel({ camera_setting_from_cpu: CameraSettingCPU }, (camera_setting_from_cpu) => {
+    const camera_settings = initialize_camera(camera_setting_from_cpu);
     for (let I of ti.ndrange(image_width, image_height)) {
         const i = I[0];
         const j = I[1];
-
         const ray = get_ray(i, j, camera_settings);
         colorBuffer[I] += ray_color(ray, camera_settings.max_depth);
+    }
+});
+
+const clear_color_buffer = ti.kernel(() => {
+    for (const I of ti.ndrange(image_width, image_height)) {
+        colorBuffer[I] = [0.0, 0.0, 0.0];
     }
 });
 
@@ -114,19 +124,61 @@ const tone_map = ti.kernel((total_samples) => {
 
 ti.addToKernelScope({
     tone_map,
+    clear_color_buffer,
 });
 
-const MAX_SAMPLES = 1000;
-let total_samples = 0;
+const { gui, controllers, get_values } = createGui();
+gui.onChange(() => {
+    fast_pass();
+});
 
-const main = async () => {
-    render();
-    total_samples += 1;
+function move_camera(event) {
+    if (camera_moving) {
+        const x_diff = event.pageX - prev_mouse_pos.x;
+        const y_diff = event.pageY - prev_mouse_pos.y;
+
+        controllers.cam_x.setValue(controllers.cam_x.getValue() + x_diff / 100);
+        controllers.cam_y.setValue(controllers.cam_y.getValue() + y_diff / 100);
+
+        prev_mouse_pos.x = event.pageX;
+        prev_mouse_pos.y = event.pageY;
+    }
+}
+
+const prev_mouse_pos = {
+    x: 0,
+    y: 0,
+};
+htmlCanvas.addEventListener('mousedown', (event) => {
+    prev_mouse_pos.x = event.pageX;
+    prev_mouse_pos.y = event.pageY;
+    camera_moving = true;
+});
+htmlCanvas.addEventListener('mouseup', () => {
+    camera_moving = false;
+    full_pass();
+});
+htmlCanvas.addEventListener('mousemove', move_camera);
+
+const fast_pass = () => {
+    const camera_settings = get_camera_settings(get_values(), image_width, image_height);
+    clear_color_buffer();
+    render(camera_settings);
+    total_samples = 1;
     tone_map(total_samples);
     canvas.setImage(pixelsBuffer);
-    if (total_samples < MAX_SAMPLES) {
-        requestAnimationFrame(main);
+};
+
+const full_pass = () => {
+    const camera_settings = get_camera_settings(get_values(), image_width, image_height);
+    const { spp } = get_values();
+    if (total_samples < spp) {
+        render(camera_settings);
+        total_samples += 1;
+        tone_map(total_samples);
+        canvas.setImage(pixelsBuffer);
+        requestAnimationFrame(full_pass);
     }
 };
 
-console.log(await main());
+full_pass();
