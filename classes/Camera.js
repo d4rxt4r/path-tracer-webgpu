@@ -77,8 +77,8 @@ const initialize_camera = (cam_set_cpu) => {
 const get_camera_settings = (settings, image_width, image_height) => {
     const { at_z, at_y, at_x, cam_z, cam_y, cam_x, vfov, max_depth, defocus_angle, focus_dist } = settings;
 
-    const lookfrom = [at_z, at_y, at_x];
-    const lookat = [cam_z, cam_y, cam_x];
+    const lookfrom = [cam_x, cam_y, cam_z];
+    const lookat = [at_x, at_y, at_z];
     const vup = [0, 1, 0];
 
     const camera_center = lookfrom;
@@ -133,4 +133,90 @@ const get_camera_settings = (settings, image_width, image_height) => {
     };
 };
 
-export { CameraSetting, CameraSettingCPU, initialize_camera, get_camera_settings };
+function init_camera_movement(canvas, controllers, get_values, render_func) {
+    let camera_moving = false;
+
+    function move_camera_at(event) {
+        if (camera_moving) {
+            const x_diff = event.pageX - prev_mouse_pos.x;
+            const y_diff = event.pageY - prev_mouse_pos.y;
+
+            controllers.at_x.setValue(controllers.at_x.getValue() - x_diff / 100);
+            controllers.at_y.setValue(controllers.at_y.getValue() + y_diff / 100);
+
+            prev_mouse_pos.x = event.pageX;
+            prev_mouse_pos.y = event.pageY;
+        }
+    }
+
+    /**
+     * @param {KeyboardEvent} event
+     */
+    function move_camera(event) {
+        const key = event.key;
+
+        const vals = get_values();
+        const forward_vec = vf.scale(vf.sub([vals.at_x, vals.at_y, vals.at_z], [vals.cam_x, vals.cam_y, vals.cam_z]), 0.08);
+
+        const add_vec = (vec, op = 1) => {
+            controllers.cam_x.setValue(vals.cam_x + vec[0] * op);
+            controllers.cam_y.setValue(vals.cam_y + vec[1] * op);
+            controllers.cam_z.setValue(vals.cam_z + vec[2] * op);
+            controllers.at_x.setValue(vals.at_x + vec[0] * op);
+            controllers.at_y.setValue(vals.at_y + vec[1] * op);
+            controllers.at_z.setValue(vals.at_z + vec[2] * op);
+        };
+
+        if (key === 'w') {
+            add_vec(forward_vec);
+        }
+        if (key === 's') {
+            add_vec(forward_vec, -1);
+        }
+        if (key === 'a') {
+            const left_vec = vf.scale(vf.cross([0, 1, 0], forward_vec), 0.3);
+            add_vec(left_vec);
+        }
+        if (key === 'd') {
+            const right_vec = vf.scale(vf.cross(forward_vec, [0, 1, 0]), 0.3);
+            add_vec(right_vec);
+        }
+    }
+
+    function throttle(mainFunction, delay) {
+        let timerFlag = null;
+
+        return (...args) => {
+            if (timerFlag === null) {
+                mainFunction(...args);
+                timerFlag = setTimeout(() => {
+                    timerFlag = null;
+                }, delay);
+            }
+        };
+    }
+
+    const throttledMove = throttle(move_camera, 30);
+    const throttledMoveAt = throttle(move_camera_at, 60);
+
+    const prev_mouse_pos = {
+        x: 0,
+        y: 0,
+    };
+    canvas.addEventListener('mousedown', (event) => {
+        prev_mouse_pos.x = event.pageX;
+        prev_mouse_pos.y = event.pageY;
+        camera_moving = true;
+    });
+    canvas.addEventListener('mouseup', () => {
+        camera_moving = false;
+        render_func();
+    });
+    canvas.addEventListener('mousemove', throttledMoveAt);
+    window.addEventListener('keydown', throttledMove);
+    window.addEventListener('keyup', () => {
+        render_func();
+    });
+}
+
+export { CameraSetting, CameraSettingCPU, initialize_camera, get_camera_settings, init_camera_movement };
