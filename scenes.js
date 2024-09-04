@@ -35,6 +35,18 @@ const scene_1 = [
         radius: 0.5,
         mat: 4,
     },
+    {
+        type: OBJ_TYPE.SPHERE,
+        center: [-1.0, 1.1, -1.0],
+        radius: 0.5,
+        mat: 2,
+    },
+    {
+        type: OBJ_TYPE.SPHERE,
+        center: [-1.0, 0.6, -1.0],
+        radius: 0.4,
+        mat: 2,
+    },
 ];
 
 const scene_1_mat = [
@@ -51,17 +63,17 @@ const scene_1_mat = [
     {
         type: MAT_TYPE.DIELECTRIC,
         attenuation: [1.0, 1.0, 1.0],
-        k: 2,
+        k: 1.5,
     },
     {
         type: MAT_TYPE.DIELECTRIC,
         attenuation: [1.0, 1.0, 1.0],
-        k: 1.0 / 2,
+        k: 1.0 / 1.5,
     },
     {
         type: MAT_TYPE.METAL,
         attenuation: [0.8, 0.6, 0.2],
-        k: 0.0,
+        k: 0.8,
     },
 ];
 

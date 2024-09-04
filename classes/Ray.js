@@ -72,7 +72,7 @@ const ray_color = (ray, max_depth) => {
         direction: ray.direction,
     };
 
-    let result_color = [1.0, 1.0, 1.0];
+    let result_color = [0.8, 0.7, 1.0];
     let depth = max_depth;
 
     while (depth > 0) {
@@ -84,7 +84,7 @@ const ray_color = (ray, max_depth) => {
             mat: -1,
         };
 
-        if (hit_scene(temp_ray, get_interval(0.001, MAX_F32), rec)) {
+        if (hit_scene(temp_ray, get_interval(ti.f32(0.001), ti.f32(MAX_F32)), rec)) {
             const mat_data = material_scatter(rec.mat, temp_ray, rec);
             if (mat_data.scatter) {
                 temp_ray.origin = mat_data.scattered.origin;

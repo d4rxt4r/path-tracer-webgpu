@@ -28,4 +28,23 @@ const random_f32 = (min, max) => {
     return min + (max - min) * Math.random();
 };
 
-export { random_f32, clamp, degrees_to_radians };
+const random_i32 = (min, max) => {
+    return min + Math.floor(Math.random() * (max - min + 1));
+};
+
+const round = (num) => Math.round((num + Number.EPSILON) * 1000) / 1000;
+
+function throttle(mainFunction, delay) {
+    let timerFlag = null;
+
+    return (...args) => {
+        if (timerFlag === null) {
+            mainFunction(...args);
+            timerFlag = setTimeout(() => {
+                timerFlag = null;
+            }, delay);
+        }
+    };
+}
+
+export { round, random_i32, random_f32, clamp, degrees_to_radians, throttle };

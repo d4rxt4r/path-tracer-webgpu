@@ -1,11 +1,12 @@
 import * as ti from '../lib/taichi.js';
 import { Hittable } from './Hittable.js';
 import { hit_sphere } from './Sphere.js';
-import { OBJ_TYPE } from '../const.js';
-import { Materials } from './Material.js';
+import { init_materials } from './Material.js';
 import { get_interval } from './Interval.js';
+import { hit_aabb } from './AABB.js';
+import { BVHNodes, init_bvh_nodes } from './BVHNode.js';
 
-const Scene = ti.field(Hittable, 1000);
+let Scene = ti.field(Hittable, 0);
 
 /**
  * Initialize the scene
@@ -13,13 +14,16 @@ const Scene = ti.field(Hittable, 1000);
  * @param {import("./Material.js").Material[]} mat_list
  */
 const init_scene = async (obj_list, mat_list) => {
+    Scene = ti.field(Hittable, obj_list.length);
+
+    await init_bvh_nodes(obj_list);
+
     for (let i = 0; i < obj_list.length; i++) {
-        await Scene.set([i], obj_list[i]);
+        const obj = obj_list[i];
+        await Scene.set([i], obj);
     }
 
-    for (let i = 0; i < mat_list.length; i++) {
-        await Materials.set([i], mat_list[i]);
-    }
+    await init_materials(mat_list);
 };
 
 /**
@@ -29,31 +33,72 @@ const init_scene = async (obj_list, mat_list) => {
  * @param {HitRecord} rec
  */
 const hit_scene = (r, ray_t, rec) => {
-    let temp_rec = {
-        p: [0.0, 0.0, 0.0],
-        normal: [0.0, 0.0, 0.0],
-        t: 0.0,
-        front_face: true,
-        mat: -1,
-    };
     let hit_anything = false;
     let closest_so_far = ti.f32(ray_t.max);
 
-    for (let i of ti.range(Scene.dimensions[0])) {
-        const obj = Scene[i];
+    let i = -1;
+    // let left_index_next = 0;
+    // let prev_parent = BVHNodes[left_index_next];
 
-        if (obj.type === OBJ_TYPE.SPHERE) {
-            if (hit_sphere(obj, r, get_interval(ray_t.min, closest_so_far), temp_rec)) {
-                hit_anything = true;
-                closest_so_far = temp_rec.t;
+    while (i < BVHNodes.dimensions[0]) {
+        i += 1;
 
-                rec.p = temp_rec.p;
-                rec.normal = temp_rec.normal;
-                rec.t = temp_rec.t;
-                rec.front_face = temp_rec.front_face;
-                rec.mat = temp_rec.mat;
-            }
+        // if (i < left_index_next) {
+        //     continue;
+        // }
+
+        const current_node = BVHNodes[i];
+        const is_parent = current_node.is_parent === 1;
+        if (is_parent) {
+            // prev_parent = current_node;
+            // left_index_next = current_node.left_id;
+            continue;
         }
+
+        let left_t = get_interval(ray_t.min, closest_so_far);
+        let hit_l = false;
+        let hit_r = false;
+        const hit_box_l = hit_aabb(r, left_t, current_node.bbox);
+
+        if (!hit_box_l) {
+            continue;
+        }
+
+        if (hit_box_l) {
+            hit_l = hit_sphere(Scene[current_node.left_id], r, left_t, rec);
+            if (hit_l) {
+                hit_anything = true;
+                ray_t = left_t;
+                closest_so_far = rec.t;
+            }
+
+            if (current_node.left_id !== current_node.right_id) {
+                let right_t = get_interval(left_t.min, ray_t.max);
+                if (hit_box_l) {
+                    right_t.max = closest_so_far;
+                }
+
+                hit_r = hit_sphere(Scene[current_node.right_id], r, right_t, rec);
+                if (hit_sphere(Scene[current_node.right_id], r, right_t, rec)) {
+                    hit_anything = true;
+                    ray_t = right_t;
+                    closest_so_far = rec.t;
+                }
+            }
+
+            // if (current_node.left_id === current_node.right_id) {
+            //     hit_r = hit_l;
+            // }
+        }
+
+        // if (!hit_box_l || !hit_l || !hit_r) {
+        //     left_index_next = prev_parent.right_id;
+        //     continue;
+        // }
+
+        // if (hit_anything) {
+        //     break;
+        // }
     }
 
     return hit_anything;

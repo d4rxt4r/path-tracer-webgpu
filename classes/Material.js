@@ -14,7 +14,15 @@ const Material = ti.types.struct({
     k: ti.f32,
 });
 
-const Materials = ti.field(Material, 1000);
+let Materials = ti.field(Material, 0);
+
+const init_materials = async (mat_list) => {
+    Materials = ti.field(Material, mat_list.length);
+
+    for (let i = 0; i < mat_list.length; i++) {
+        await Materials.set([i], mat_list[i]);
+    }
+};
 
 /**
  * Calculates the scatter direction and albedo of a ray
@@ -133,4 +141,4 @@ const dielectric_scatter = (r_in, rec, mat) => {
     };
 };
 
-export { Materials, material_scatter, lambertian_scatter, metal_scatter, material_reflectance, dielectric_scatter };
+export { Materials, init_materials, material_scatter, lambertian_scatter, metal_scatter, material_reflectance, dielectric_scatter };

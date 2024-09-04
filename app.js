@@ -2,10 +2,12 @@ import * as ti from './lib/taichi.js';
 await ti.init();
 
 import { EPS, MAX_F32, OBJ_TYPE, MAT_TYPE } from './const.js';
-import { clamp, degrees_to_radians, random_f32 } from './classes/Math.js';
+import { throttle, clamp, degrees_to_radians, random_f32 } from './classes/Math.js';
 import { linear_to_gamma, process_color } from './classes/Color.js';
 import { ray_at, ray_color, get_ray, sample_square, defocus_disk_sample } from './classes/Ray.js';
 import { Scene, init_scene, hit_scene } from './classes/Scene.js';
+import { hit_aabb, get_aabb_axis } from './classes/AABB.js';
+import { BVHNodes } from './classes/BVHNode.js';
 import {
     Materials,
     material_scatter,
@@ -41,6 +43,7 @@ const canvasSize = [image_width, image_height];
 const htmlCanvas = document.getElementById('canvas');
 htmlCanvas.width = image_width;
 htmlCanvas.height = image_height;
+// htmlCanvas.style.zoom = 1.5;
 
 let canvas = new ti.Canvas(htmlCanvas);
 const colorBuffer = ti.Vector.field(3, ti.f32, canvasSize);
@@ -68,6 +71,9 @@ ti.addToKernelScope({
     set_face_normal,
     hit_scene,
     hit_sphere,
+    // AABB
+    hit_aabb,
+    get_aabb_axis,
     // Color
     linear_to_gamma,
     process_color,
@@ -97,7 +103,10 @@ ti.addToKernelScope({
 });
 
 await init_scene(scene_1, scene_1_mat);
-ti.addToKernelScope({ Scene, Materials });
+ti.addToKernelScope({ Scene, BVHNodes, Materials });
+
+console.log('BVH Nodes', await BVHNodes.toArray());
+console.log('Scene objects', await Scene.toArray());
 
 const render = ti.kernel({ camera_setting_from_cpu: CameraSettingCPU }, (camera_setting_from_cpu) => {
     const camera_settings = initialize_camera(camera_setting_from_cpu);
@@ -128,10 +137,11 @@ ti.addToKernelScope({
 
 const { gui, controllers, get_values } = createGui();
 gui.onChange(() => {
-    fast_pass();
+    requestAnimationFrame(throttled_fast_pass);
 });
+
 gui.onFinishChange(() => {
-    full_pass();
+    requestAnimationFrame(throttled_full_pass);
 });
 
 const fast_pass = () => {
@@ -146,6 +156,7 @@ const fast_pass = () => {
 const full_pass = () => {
     const camera_settings = get_camera_settings(get_values(), image_width, image_height);
     const { spp } = get_values();
+
     if (total_samples < spp) {
         render(camera_settings);
         total_samples += 1;
@@ -155,6 +166,8 @@ const full_pass = () => {
     }
 };
 
-full_pass();
+const throttled_fast_pass = throttle(fast_pass, 10);
+const throttled_full_pass = throttle(full_pass, 10);
 
+full_pass();
 init_camera_movement(htmlCanvas, controllers, get_values, full_pass);

@@ -1,7 +1,6 @@
 import * as ti from '../lib/taichi.js';
-await ti.init();
 
-import { degrees_to_radians } from './Math.js';
+import { degrees_to_radians, round, throttle } from './Math.js';
 import VectorFactory from './Vector.js';
 
 const vf = new VectorFactory();
@@ -141,8 +140,8 @@ function init_camera_movement(canvas, controllers, get_values, render_func) {
             const x_diff = event.pageX - prev_mouse_pos.x;
             const y_diff = event.pageY - prev_mouse_pos.y;
 
-            controllers.at_x.setValue(controllers.at_x.getValue() - x_diff / 100);
-            controllers.at_y.setValue(controllers.at_y.getValue() + y_diff / 100);
+            controllers.at_x.setValue(round(controllers.at_x.getValue() - x_diff / 200));
+            controllers.at_y.setValue(round(controllers.at_y.getValue() + y_diff / 200));
 
             prev_mouse_pos.x = event.pageX;
             prev_mouse_pos.y = event.pageY;
@@ -159,12 +158,12 @@ function init_camera_movement(canvas, controllers, get_values, render_func) {
         const forward_vec = vf.scale(vf.sub([vals.at_x, vals.at_y, vals.at_z], [vals.cam_x, vals.cam_y, vals.cam_z]), 0.08);
 
         const add_vec = (vec, op = 1) => {
-            controllers.cam_x.setValue(vals.cam_x + vec[0] * op);
-            controllers.cam_y.setValue(vals.cam_y + vec[1] * op);
-            controllers.cam_z.setValue(vals.cam_z + vec[2] * op);
-            controllers.at_x.setValue(vals.at_x + vec[0] * op);
-            controllers.at_y.setValue(vals.at_y + vec[1] * op);
-            controllers.at_z.setValue(vals.at_z + vec[2] * op);
+            controllers.cam_x.setValue(round(vals.cam_x + vec[0] * op));
+            controllers.cam_y.setValue(round(vals.cam_y + vec[1] * op));
+            controllers.cam_z.setValue(round(vals.cam_z + vec[2] * op));
+            controllers.at_x.setValue(round(vals.at_x + vec[0] * op));
+            controllers.at_y.setValue(round(vals.at_y + vec[1] * op));
+            controllers.at_z.setValue(round(vals.at_z + vec[2] * op));
         };
 
         if (key === 'w') {
@@ -183,20 +182,7 @@ function init_camera_movement(canvas, controllers, get_values, render_func) {
         }
     }
 
-    function throttle(mainFunction, delay) {
-        let timerFlag = null;
-
-        return (...args) => {
-            if (timerFlag === null) {
-                mainFunction(...args);
-                timerFlag = setTimeout(() => {
-                    timerFlag = null;
-                }, delay);
-            }
-        };
-    }
-
-    const throttledMove = throttle(move_camera, 30);
+    const throttledMove = throttle(move_camera, 60);
     const throttledMoveAt = throttle(move_camera_at, 60);
 
     const prev_mouse_pos = {
@@ -213,6 +199,7 @@ function init_camera_movement(canvas, controllers, get_values, render_func) {
         render_func();
     });
     canvas.addEventListener('mousemove', throttledMoveAt);
+
     window.addEventListener('keydown', throttledMove);
     window.addEventListener('keyup', () => {
         render_func();
