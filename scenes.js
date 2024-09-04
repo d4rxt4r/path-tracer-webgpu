@@ -37,15 +37,9 @@ const scene_1 = [
     },
     {
         type: OBJ_TYPE.SPHERE,
-        center: [-1.0, 1.1, -1.0],
-        radius: 0.5,
-        mat: 2,
-    },
-    {
-        type: OBJ_TYPE.SPHERE,
-        center: [-1.0, 0.6, -1.0],
-        radius: 0.4,
-        mat: 2,
+        center: [-1.0, 1.2, 0],
+        radius: 0.3,
+        mat: 5,
     },
 ];
 
@@ -74,6 +68,11 @@ const scene_1_mat = [
         type: MAT_TYPE.METAL,
         attenuation: [0.8, 0.6, 0.2],
         k: 0.8,
+    },
+    {
+        type: MAT_TYPE.LIGHT,
+        attenuation: [4.2, 8.0, 4.0],
+        k: 0.0,
     },
 ];
 

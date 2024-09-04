@@ -22,8 +22,8 @@ const default_settings = {
     at_y: 0.0,
     at_z: 0.0,
 
-    spp: 5,
-    max_depth: 10,
+    spp: 50,
+    max_depth: 50,
 
     vfov: 40,
 

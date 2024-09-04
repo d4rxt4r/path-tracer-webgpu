@@ -40,7 +40,7 @@ const material_scatter = (mat_index, r_in, rec) => {
         },
     };
 
-    const mat = Materials[[mat_index]];
+    const mat = Materials[mat_index];
 
     if (mat.type === MAT_TYPE.LAMBERTIAN) {
         res = lambertian_scatter(r_in, rec, mat);
@@ -141,4 +141,22 @@ const dielectric_scatter = (r_in, rec, mat) => {
     };
 };
 
-export { Materials, init_materials, material_scatter, lambertian_scatter, metal_scatter, material_reflectance, dielectric_scatter };
+const emitted_light = (matId) => {
+    let res = [0.0, 0.0, 0.0];
+    const mat = Materials[matId];
+    if (mat.type === MAT_TYPE.LIGHT) {
+        res = mat.attenuation;
+    }
+    return res;
+};
+
+export {
+    Materials,
+    init_materials,
+    material_scatter,
+    lambertian_scatter,
+    metal_scatter,
+    material_reflectance,
+    dielectric_scatter,
+    emitted_light,
+};

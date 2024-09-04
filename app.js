@@ -14,6 +14,7 @@ import {
     lambertian_scatter,
     metal_scatter,
     dielectric_scatter,
+    emitted_light,
 } from './classes/Material.js';
 import { set_face_normal } from './classes/Hittable.js';
 import { hit_sphere } from './classes/Sphere.js';
@@ -38,19 +39,19 @@ await ti.init();
 await init_scene(scene_1, scene_1_mat);
 ti.addToKernelScope({ Scene, BVHNodes, Materials });
 
-console.log('BVH Nodes', await BVHNodes.toArray());
-console.log('Scene objects', await Scene.toArray());
+// console.log('BVH Nodes', await BVHNodes.toArray());
+// console.log('Scene objects', await Scene.toArray());
+// console.log('Materials', await Materials.toArray());
 
 let total_samples = 0;
 const aspectRatio = 16.0 / 9.0;
-const image_width = 800;
+const image_width = 1200;
 const image_height = Number.parseInt(image_width / aspectRatio);
 const canvasSize = [image_width, image_height];
 
 const htmlCanvas = document.getElementById('canvas');
 htmlCanvas.width = image_width;
 htmlCanvas.height = image_height;
-// htmlCanvas.style.zoom = 1.5;
 
 let canvas = new ti.Canvas(htmlCanvas);
 const colorBuffer = ti.Vector.field(3, ti.f32, canvasSize);
@@ -90,6 +91,7 @@ ti.addToKernelScope({
     metal_scatter,
     material_reflectance,
     dielectric_scatter,
+    emitted_light,
     // Vector
     random_range_vec3,
     random_unit_vec3,

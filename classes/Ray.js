@@ -1,7 +1,7 @@
 import * as ti from '../lib/taichi.js';
 import { hit_scene } from './Scene.js';
 import { MAX_F32 } from '../const.js';
-import { material_scatter } from './Material.js';
+import { material_scatter, emitted_light } from './Material.js';
 import { random_in_unit_disk_vec3 } from './Vector.js';
 import { get_interval } from './Interval.js';
 
@@ -66,17 +66,15 @@ const get_ray = (i, j, camera_settings) => {
  * @param {number} max_depth
  * @return {import('./Vector').vec4} color
  */
-const ray_color = (ray, max_depth) => {
-    let temp_ray = {
-        origin: ti.f32(ray.origin),
-        direction: ray.direction,
-    };
+const ray_color = (r, max_depth) => {
+    let final_color = [0.0, 0.0, 0.0];
+    let current_attenuation = [1.0, 1.0, 1.0];
+    const background = [0.0, 0.1, 0.2];
 
-    let result_color = [0.8, 0.7, 1.0];
-    let depth = max_depth;
-
-    while (depth > 0) {
-        let rec = {
+    let depth = 0;
+    while (depth < max_depth) {
+        depth += 1;
+        const rec = {
             p: [0.0, 0.0, 0.0],
             normal: [0.0, 0.0, 0.0],
             t: 0.0,
@@ -84,24 +82,26 @@ const ray_color = (ray, max_depth) => {
             mat: -1,
         };
 
-        if (hit_scene(temp_ray, get_interval(ti.f32(0.001), ti.f32(MAX_F32)), rec)) {
-            const mat_data = material_scatter(rec.mat, temp_ray, rec);
-            if (mat_data.scatter) {
-                temp_ray.origin = mat_data.scattered.origin;
-                temp_ray.direction = mat_data.scattered.direction;
-
-                result_color *= mat_data.albedo;
-            } else {
-                result_color *= 0.0;
-            }
-        } else {
+        if (!hit_scene(r, get_interval(ti.f32(0.001), ti.f32(MAX_F32)), rec)) {
+            final_color += current_attenuation * background;
             break;
         }
 
-        depth -= 1;
+        const mat_data = material_scatter(rec.mat, r, rec);
+        const emitted = emitted_light(rec.mat);
+        final_color += current_attenuation * emitted;
+
+        const scattered = mat_data.scattered;
+        const attenuation = mat_data.albedo;
+        if (!mat_data.scatter) {
+            break;
+        }
+
+        r = scattered;
+        current_attenuation *= attenuation;
     }
 
-    return result_color;
+    return final_color;
 };
 
 export { get_ray, sample_square, defocus_disk_sample, ray_at, ray_color };
