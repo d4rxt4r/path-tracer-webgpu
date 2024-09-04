@@ -4,7 +4,7 @@ import { hit_sphere } from './Sphere.js';
 import { init_materials } from './Material.js';
 import { get_interval } from './Interval.js';
 import { hit_aabb } from './AABB.js';
-import { BVHNodes, init_bvh_nodes } from './BVHNode.js';
+import { BVHTree, build_bvh_from_obj } from './BVHTree.js';
 
 let Scene = ti.field(Hittable, 0);
 
@@ -16,7 +16,7 @@ let Scene = ti.field(Hittable, 0);
 const init_scene = async (obj_list, mat_list) => {
     Scene = ti.field(Hittable, obj_list.length);
 
-    await init_bvh_nodes(obj_list);
+    await build_bvh_from_obj(obj_list);
 
     for (let i = 0; i < obj_list.length; i++) {
         const obj = obj_list[i];
@@ -33,44 +33,34 @@ const init_scene = async (obj_list, mat_list) => {
  * @param {HitRecord} rec
  */
 const hit_scene = (r, ray_t, rec) => {
+    let root_index = 0;
+    let current_index = root_index;
+
     let hit_anything = false;
-    let closest_so_far = ti.f32(ray_t.max);
+    let current_t = ray_t;
 
-    // TODO: implement proper tree traversal algorithm
-    // this one does not check for parent nodes
-    for (let i of ti.range(BVHNodes.dimensions[0])) {
-        const current_node = BVHNodes[i];
-        const is_parent = current_node.is_parent === 1;
-        if (is_parent) {
-            continue;
-        }
+    while (current_index != -1) {
+        let current_node = BVHTree[current_index];
 
-        let left_t = get_interval(ray_t.min, closest_so_far);
-        const hit_box_l = hit_aabb(r, left_t, current_node.bbox);
-
-        if (!hit_box_l) {
-            continue;
-        }
-
-        let hit_r = hit_sphere(Scene[current_node.left_id], r, left_t, rec);
-        if (hit_sphere(Scene[current_node.left_id], r, left_t, rec)) {
-            hit_anything = true;
-            ray_t = left_t;
-            closest_so_far = rec.t;
-        }
-
-        if (current_node.left_id !== current_node.right_id) {
-            let right_t = get_interval(left_t.min, ray_t.max);
-            if (hit_r) {
-                right_t.max = closest_so_far;
-            }
-
-            if (hit_sphere(Scene[current_node.right_id], r, right_t, rec)) {
-                hit_anything = true;
-                ray_t = right_t;
-                closest_so_far = rec.t;
+        let local_it = get_interval(ray_t.min, current_t.max);
+        if (hit_aabb(r, local_it, current_node.bbox)) {
+            if (current_node.left_index == -1 && current_node.right_index == -1) {
+                // Leaf node
+                let hit_this = hit_sphere(Scene[current_node.primitive_index], r, local_it, rec);
+                if (hit_this) {
+                    hit_anything = true;
+                    current_t.max = rec.t;
+                    ray_t = current_t;
+                }
+            } else {
+                // Internal node, visit left child
+                current_index = current_node.left_index;
+                continue;
             }
         }
+
+        // Move to the next node in the "rope"
+        current_index = current_node.next_index;
     }
 
     return hit_anything;

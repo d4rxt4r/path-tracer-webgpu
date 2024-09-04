@@ -1,4 +1,6 @@
 import * as ti from '../lib/taichi.js';
+import VectorFactory from './Vector.js';
+const vf = new VectorFactory();
 
 import { Interval, get_interval, get_interval_int, interval_size } from './Interval.js';
 
@@ -7,6 +9,37 @@ const AABB = ti.types.struct({
     y: Interval,
     z: Interval,
 });
+
+class K_AABB {
+    constructor(min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity]) {
+        this.min = min;
+        this.max = max;
+    }
+
+    static surroundingBox(box1, box2) {
+        if (!box1 && !box2) {
+            console.warn('AABB.surroundingBox received two invalid boxes');
+            return new K_AABB();
+        }
+        if (!box1) return new K_AABB(box2.min, box2.max);
+        if (!box2) return new K_AABB(box1.min, box1.max);
+
+        const small = vf.min(box1.min, box2.min);
+        const big = vf.max(box1.max, box2.max);
+        return new K_AABB(small, big);
+    }
+
+    centroid() {
+        return [(this.min[0] + this.max[0]) / 2, (this.min[1] + this.max[1]) / 2, (this.min[2] + this.max[2]) / 2];
+    }
+
+    longestAxis() {
+        const d = [this.max[0] - this.min[0], this.max[1] - this.min[1], this.max[2] - this.min[2]];
+        if (d.x > d.y && d.x > d.z) return 0;
+        if (d.y > d.z) return 1;
+        return 2;
+    }
+}
 
 const get_aabb_int = (x, y, z) => {
     return {
@@ -93,4 +126,4 @@ const hit_aabb = (r, ray_t, aabb) => {
     return res;
 };
 
-export { AABB, get_aabb_int, get_aabb_points, get_aabb_bbox, get_aabb_axis, hit_aabb, get_longest_aabb_axis };
+export { AABB, K_AABB, get_aabb_int, get_aabb_points, get_aabb_bbox, get_aabb_axis, hit_aabb, get_longest_aabb_axis };

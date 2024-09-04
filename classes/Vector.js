@@ -88,6 +88,14 @@ class VectorFactory {
     cross(a, b) {
         return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
     }
+
+    min(a, b) {
+        return [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.min(a[2], b[2])];
+    }
+
+    max(a, b) {
+        return [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.max(a[2], b[2])];
+    }
 }
 
 const random_vec3 = () => {

@@ -6,7 +6,6 @@ import { linear_to_gamma, process_color } from './classes/Color.js';
 import { ray_at, ray_color, get_ray, sample_square, defocus_disk_sample } from './classes/Ray.js';
 import { Scene, init_scene, hit_scene } from './classes/Scene.js';
 import { hit_aabb, get_aabb_axis } from './classes/AABB.js';
-import { BVHNodes } from './classes/BVHNode.js';
 import {
     Materials,
     material_scatter,
@@ -33,13 +32,14 @@ import {
 } from './classes/Vector.js';
 import { get_interval, interval_clamp, interval_surrounds } from './classes/Interval.js';
 import { createGui } from './classes/GUI.js';
+import { BVHTree } from './classes/BVHTree.js';
 
 await ti.init();
 
 await init_scene(scene_1, scene_1_mat);
-ti.addToKernelScope({ Scene, BVHNodes, Materials });
+ti.addToKernelScope({ BVHTree, Scene, Materials });
 
-// console.log('BVH Nodes', await BVHNodes.toArray());
+// console.log('BVH Tree', await BVHTree.toArray());
 // console.log('Scene objects', await Scene.toArray());
 // console.log('Materials', await Materials.toArray());
 

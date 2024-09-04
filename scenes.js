@@ -66,8 +66,8 @@ const scene_1_mat = [
     },
     {
         type: MAT_TYPE.METAL,
-        attenuation: [0.8, 0.6, 0.2],
-        k: 0.8,
+        attenuation: [0.8, 0.9, 0.8],
+        k: 0.2,
     },
     {
         type: MAT_TYPE.LIGHT,
