@@ -36,69 +36,41 @@ const hit_scene = (r, ray_t, rec) => {
     let hit_anything = false;
     let closest_so_far = ti.f32(ray_t.max);
 
-    let i = -1;
-    // let left_index_next = 0;
-    // let prev_parent = BVHNodes[left_index_next];
-
-    while (i < BVHNodes.dimensions[0]) {
-        i += 1;
-
-        // if (i < left_index_next) {
-        //     continue;
-        // }
-
+    // TODO: implement proper tree traversal algorithm
+    // this one does not check for parent nodes
+    for (let i of ti.range(BVHNodes.dimensions[0])) {
         const current_node = BVHNodes[i];
         const is_parent = current_node.is_parent === 1;
         if (is_parent) {
-            // prev_parent = current_node;
-            // left_index_next = current_node.left_id;
             continue;
         }
 
         let left_t = get_interval(ray_t.min, closest_so_far);
-        let hit_l = false;
-        let hit_r = false;
         const hit_box_l = hit_aabb(r, left_t, current_node.bbox);
 
         if (!hit_box_l) {
             continue;
         }
 
-        if (hit_box_l) {
-            hit_l = hit_sphere(Scene[current_node.left_id], r, left_t, rec);
-            if (hit_l) {
-                hit_anything = true;
-                ray_t = left_t;
-                closest_so_far = rec.t;
-            }
-
-            if (current_node.left_id !== current_node.right_id) {
-                let right_t = get_interval(left_t.min, ray_t.max);
-                if (hit_box_l) {
-                    right_t.max = closest_so_far;
-                }
-
-                hit_r = hit_sphere(Scene[current_node.right_id], r, right_t, rec);
-                if (hit_sphere(Scene[current_node.right_id], r, right_t, rec)) {
-                    hit_anything = true;
-                    ray_t = right_t;
-                    closest_so_far = rec.t;
-                }
-            }
-
-            // if (current_node.left_id === current_node.right_id) {
-            //     hit_r = hit_l;
-            // }
+        let hit_r = hit_sphere(Scene[current_node.left_id], r, left_t, rec);
+        if (hit_sphere(Scene[current_node.left_id], r, left_t, rec)) {
+            hit_anything = true;
+            ray_t = left_t;
+            closest_so_far = rec.t;
         }
 
-        // if (!hit_box_l || !hit_l || !hit_r) {
-        //     left_index_next = prev_parent.right_id;
-        //     continue;
-        // }
+        if (current_node.left_id !== current_node.right_id) {
+            let right_t = get_interval(left_t.min, ray_t.max);
+            if (hit_r) {
+                right_t.max = closest_so_far;
+            }
 
-        // if (hit_anything) {
-        //     break;
-        // }
+            if (hit_sphere(Scene[current_node.right_id], r, right_t, rec)) {
+                hit_anything = true;
+                ray_t = right_t;
+                closest_so_far = rec.t;
+            }
+        }
     }
 
     return hit_anything;

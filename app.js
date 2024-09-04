@@ -1,5 +1,4 @@
 import * as ti from './lib/taichi.js';
-await ti.init();
 
 import { EPS, MAX_F32, OBJ_TYPE, MAT_TYPE } from './const.js';
 import { throttle, clamp, degrees_to_radians, random_f32 } from './classes/Math.js';
@@ -33,6 +32,14 @@ import {
 } from './classes/Vector.js';
 import { get_interval, interval_clamp, interval_surrounds } from './classes/Interval.js';
 import { createGui } from './classes/GUI.js';
+
+await ti.init();
+
+await init_scene(scene_1, scene_1_mat);
+ti.addToKernelScope({ Scene, BVHNodes, Materials });
+
+console.log('BVH Nodes', await BVHNodes.toArray());
+console.log('Scene objects', await Scene.toArray());
 
 let total_samples = 0;
 const aspectRatio = 16.0 / 9.0;
@@ -101,12 +108,6 @@ ti.addToKernelScope({
     random_f32,
     degrees_to_radians,
 });
-
-await init_scene(scene_1, scene_1_mat);
-ti.addToKernelScope({ Scene, BVHNodes, Materials });
-
-console.log('BVH Nodes', await BVHNodes.toArray());
-console.log('Scene objects', await Scene.toArray());
 
 const render = ti.kernel({ camera_setting_from_cpu: CameraSettingCPU }, (camera_setting_from_cpu) => {
     const camera_settings = initialize_camera(camera_setting_from_cpu);
