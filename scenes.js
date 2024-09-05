@@ -132,7 +132,19 @@ for (let a = -11; a < 11; a++) {
         const center = [a + 0.9 * Math.random(), 0.2, b + 0.9 * Math.random()];
 
         if (vf.length(vf.sub(center, [4, 0.2, 0])) > 0.9) {
-            if (choose_mat < 0.8) {
+            if (choose_mat < 0.3) {
+                scene_2_mat.push({
+                    type: MAT_TYPE.LIGHT,
+                    attenuation: [Math.random(), Math.random(), Math.random()],
+                    k: 0,
+                });
+                scene_2.push({
+                    type: OBJ_TYPE.SPHERE,
+                    center,
+                    radius: 0.2,
+                    mat: scene_2_mat.length - 1,
+                });
+            } else if (choose_mat < 0.8) {
                 // diffuse
                 const albedo = [Math.random(), Math.random(), Math.random()];
                 scene_2_mat.push({

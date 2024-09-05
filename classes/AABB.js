@@ -10,6 +10,7 @@ const AABB = ti.types.struct({
     z: Interval,
 });
 
+// TODO: replace K_AABB with functions
 class K_AABB {
     constructor(min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity]) {
         this.min = min;

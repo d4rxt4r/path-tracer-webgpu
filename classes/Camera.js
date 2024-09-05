@@ -136,22 +136,27 @@ function init_camera_movement(canvas, controllers, get_values, render_func) {
     let camera_moving = false;
 
     function move_camera_at(event) {
-        if (camera_moving) {
-            const x_diff = event.pageX - prev_mouse_pos.x;
-            const y_diff = event.pageY - prev_mouse_pos.y;
-
-            controllers.at_x.setValue(round(controllers.at_x.getValue() - x_diff / 200));
-            controllers.at_y.setValue(round(controllers.at_y.getValue() + y_diff / 200));
-
-            prev_mouse_pos.x = event.pageX;
-            prev_mouse_pos.y = event.pageY;
+        if (!camera_moving) {
+            return;
         }
+
+        event.stopPropagation();
+
+        const x_diff = event.pageX - prev_mouse_pos.x;
+        const y_diff = event.pageY - prev_mouse_pos.y;
+
+        controllers.at_x.setValue(round(controllers.at_x.getValue() - x_diff / 200));
+        controllers.at_y.setValue(round(controllers.at_y.getValue() + y_diff / 200));
+
+        prev_mouse_pos.x = event.pageX;
+        prev_mouse_pos.y = event.pageY;
     }
 
     /**
      * @param {KeyboardEvent} event
      */
     function move_camera(event) {
+        event.stopPropagation();
         const key = event.key;
 
         const vals = get_values();

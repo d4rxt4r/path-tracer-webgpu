@@ -36,7 +36,7 @@ import { BVHTree } from './classes/BVHTree.js';
 
 await ti.init();
 
-await init_scene(scene_1, scene_1_mat);
+await init_scene(scene_2, scene_2_mat);
 ti.addToKernelScope({ BVHTree, Scene, Materials });
 
 // console.log('BVH Tree', await BVHTree.toArray());
@@ -172,5 +172,5 @@ const full_pass = () => {
 const throttled_fast_pass = throttle(fast_pass, 10);
 const throttled_full_pass = throttle(full_pass, 10);
 
-full_pass();
+fast_pass();
 init_camera_movement(htmlCanvas, controllers, get_values, full_pass);
