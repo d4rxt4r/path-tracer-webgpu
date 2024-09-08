@@ -8,8 +8,17 @@ import { get_interval } from './Interval.js';
 /**
  * @typedef Ray
  * @property {import('./Vector').vec3} origin
- * @property {import('./Vector').vec4} direction
+ * @property {import('./Vector').vec3} direction
+ * @property {number} time
  */
+
+const new_ray = (origin, direction, time = 0) => {
+    return {
+        origin,
+        direction,
+        time,
+    };
+};
 
 /**
  * @param {Ray} ray
@@ -52,12 +61,7 @@ const get_ray = (i, j, camera_settings) => {
     }
     const ray_direction = pixel_sample - ray_origin;
 
-    const ray = {
-        origin: ray_origin,
-        direction: ray_direction,
-    };
-
-    return ray;
+    return new_ray(ray_origin, ray_direction, ti.random());
 };
 
 /**
@@ -104,4 +108,4 @@ const ray_color = (r, max_depth) => {
     return final_color;
 };
 
-export { get_ray, sample_square, defocus_disk_sample, ray_at, ray_color };
+export { new_ray, get_ray, sample_square, defocus_disk_sample, ray_at, ray_color };

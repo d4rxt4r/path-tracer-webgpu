@@ -1,9 +1,10 @@
 import * as ti from './lib/taichi.js';
+await ti.init();
 
 import { EPS, MAX_F32, OBJ_TYPE, MAT_TYPE } from './const.js';
 import { throttle, clamp, degrees_to_radians, random_f32 } from './classes/Math.js';
 import { linear_to_gamma, process_color } from './classes/Color.js';
-import { ray_at, ray_color, get_ray, sample_square, defocus_disk_sample } from './classes/Ray.js';
+import { new_ray, ray_at, ray_color, get_ray, sample_square, defocus_disk_sample } from './classes/Ray.js';
 import { Scene, init_scene, hit_scene } from './classes/Scene.js';
 import { hit_aabb, get_aabb_axis } from './classes/AABB.js';
 import {
@@ -16,10 +17,10 @@ import {
     emitted_light,
 } from './classes/Material.js';
 import { set_face_normal } from './classes/Hittable.js';
-import { hit_sphere } from './classes/Sphere.js';
+import { hit_sphere, get_sphere_center } from './classes/Sphere.js';
 import { CameraSettingCPU, initialize_camera, get_camera_settings, init_camera_movement } from './classes/Camera.js';
 // eslint-disable-next-line no-unused-vars
-import { scene_1, scene_1_mat, scene_2, scene_2_mat } from './scenes.js';
+import { SCENE_LIST } from './scenes.js';
 import {
     random_unit_vec3,
     random_range_vec3,
@@ -34,18 +35,29 @@ import { get_interval, interval_clamp, interval_surrounds } from './classes/Inte
 import { createGui } from './classes/GUI.js';
 import { BVHTree } from './classes/BVHTree.js';
 
-await ti.init();
+const scene_index = 1;
+const { gui, controllers } = createGui(SCENE_LIST[scene_index].camera);
 
-await init_scene(scene_2, scene_2_mat);
+gui.onChange(async (event) => {
+    // TODO: fix scene change, uniform doesnt updates :(
+    // if (event.property === 'scene') {
+    //     await init_scene(SCENE_LIST[event.value]);
+    // }
+
+    requestAnimationFrame(throttled_fast_pass);
+});
+
+gui.onFinishChange(() => {
+    requestAnimationFrame(throttled_full_pass);
+});
+
+await init_scene(SCENE_LIST[scene_index]);
+
 ti.addToKernelScope({ BVHTree, Scene, Materials });
-
-// console.log('BVH Tree', await BVHTree.toArray());
-// console.log('Scene objects', await Scene.toArray());
-// console.log('Materials', await Materials.toArray());
 
 let total_samples = 0;
 const aspectRatio = 16.0 / 9.0;
-const image_width = 1200;
+const image_width = document.body.clientWidth;
 const image_height = Number.parseInt(image_width / aspectRatio);
 const canvasSize = [image_width, image_height];
 
@@ -70,6 +82,7 @@ ti.addToKernelScope({
     // Camera
     initialize_camera,
     // Ray
+    new_ray,
     get_ray,
     sample_square,
     defocus_disk_sample,
@@ -79,6 +92,7 @@ ti.addToKernelScope({
     set_face_normal,
     hit_scene,
     hit_sphere,
+    get_sphere_center,
     // AABB
     hit_aabb,
     get_aabb_axis,
@@ -138,17 +152,8 @@ ti.addToKernelScope({
     clear_color_buffer,
 });
 
-const { gui, controllers, get_values } = createGui();
-gui.onChange(() => {
-    requestAnimationFrame(throttled_fast_pass);
-});
-
-gui.onFinishChange(() => {
-    requestAnimationFrame(throttled_full_pass);
-});
-
 const fast_pass = () => {
-    const camera_settings = get_camera_settings(get_values(), image_width, image_height);
+    const camera_settings = get_camera_settings(gui.get_values(), image_width, image_height);
     clear_color_buffer();
     render(camera_settings);
     total_samples = 1;
@@ -157,8 +162,10 @@ const fast_pass = () => {
 };
 
 const full_pass = () => {
-    const camera_settings = get_camera_settings(get_values(), image_width, image_height);
-    const { spp } = get_values();
+    const gui_values = gui.get_values();
+    const { spp } = gui_values;
+
+    const camera_settings = get_camera_settings(gui_values, image_width, image_height);
 
     if (total_samples < spp) {
         render(camera_settings);
@@ -173,4 +180,4 @@ const throttled_fast_pass = throttle(fast_pass, 10);
 const throttled_full_pass = throttle(full_pass, 10);
 
 fast_pass();
-init_camera_movement(htmlCanvas, controllers, get_values, full_pass);
+init_camera_movement(htmlCanvas, controllers, gui.get_values.bind(gui), full_pass);

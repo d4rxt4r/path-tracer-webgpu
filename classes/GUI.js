@@ -1,5 +1,8 @@
+import { SCENE_SELECT } from '../scenes.js';
+
 /**
  * @typedef GUISettings
+ * @property {number} scene
  * @property {number} cam_x
  * @property {number} cam_y
  * @property {number} cam_z
@@ -14,6 +17,8 @@
  */
 
 const default_settings = {
+    scene: 0,
+
     cam_x: 0.0,
     cam_y: 0.0,
     cam_z: 2.0,
@@ -31,36 +36,37 @@ const default_settings = {
     focus_dist: 10.0,
 };
 
-const createGui = (settings = default_settings) => {
+const createGui = (user_settings = {}) => {
     // eslint-disable-next-line no-undef
     const gui = new lil.GUI();
 
-    const controllers = Object.fromEntries(
-        Object.keys(settings).map((key) => {
-            return [key, gui.add(settings, key)];
-        }),
-    );
+    const settings = {
+        ...default_settings,
+        ...user_settings,
+    };
 
-    controllers.at_x.step(0.001).listen(false);
-    controllers.at_y.step(0.001).listen(false);
-    controllers.at_z.step(0.001).listen(false);
-    controllers.cam_x.step(0.001).listen(false);
-    controllers.cam_y.step(0.001).listen(false);
-    controllers.cam_z.step(0.001).listen(false);
+    const controllers = Object.fromEntries(Object.keys(settings).map((key) => [key, gui.add(settings, key)]));
+
+    controllers.scene.options(SCENE_SELECT);
+    controllers.at_x.step(0.01).listen(false);
+    controllers.at_y.step(0.01).listen(false);
+    controllers.at_z.step(0.01).listen(false);
+    controllers.cam_x.step(0.01).listen(false);
+    controllers.cam_y.step(0.01).listen(false);
+    controllers.cam_z.step(0.01).listen(false);
     controllers.spp.min(1).max(2000).step(1).listen(false);
     controllers.max_depth.min(1).max(200).step(1).listen(false);
     controllers.focus_dist.min(0.01).listen(false);
     controllers.defocus_angle.min(0).max(2).step(0.01).listen(false);
     controllers.vfov.min(1).max(110).step(1).listen(false);
 
-    const get_values = () => {
-        return gui.save().controllers;
+    gui.get_values = function () {
+        return this.save().controllers;
     };
 
     return {
         gui,
         controllers,
-        get_values,
     };
 };
 

@@ -1,6 +1,7 @@
 import * as ti from '../lib/taichi.js';
 import { MAT_TYPE } from '../const.js';
 import { random_unit_vec3, near_zero_vec3, reflect_vec3, refract_vec3 } from './Vector.js';
+import { new_ray } from './Ray.js';
 
 /**
  * @typedef Material
@@ -34,10 +35,7 @@ const material_scatter = (mat_index, r_in, rec) => {
     let res = {
         scatter: false,
         albedo: [0.0, 0.0, 0.0],
-        scattered: {
-            origin: rec.p,
-            direction: r_in.direction,
-        },
+        scattered: new_ray(rec.p, r_in.direction, r_in.time),
     };
 
     const mat = Materials[mat_index];
@@ -70,10 +68,7 @@ const lambertian_scatter = (r_in, rec, mat) => {
     return {
         scatter: true,
         albedo: mat.attenuation,
-        scattered: {
-            origin: rec.p,
-            direction: scatter_direction,
-        },
+        scattered: new_ray(rec.p, scatter_direction, r_in.time),
     };
 };
 
@@ -86,10 +81,7 @@ const lambertian_scatter = (r_in, rec, mat) => {
 const metal_scatter = (r_in, rec, mat) => {
     let reflected = reflect_vec3(r_in.direction, rec.normal);
     reflected = ti.normalized(reflected) + mat.k * random_unit_vec3();
-    const scattered = {
-        origin: rec.p,
-        direction: reflected,
-    };
+    const scattered = new_ray(rec.p, reflected, r_in.time);
 
     return {
         scatter: ti.dot(scattered.direction, rec.normal) > 0,
@@ -134,10 +126,7 @@ const dielectric_scatter = (r_in, rec, mat) => {
     return {
         scatter: true,
         albedo: mat.attenuation,
-        scattered: {
-            origin: rec.p,
-            direction: direction,
-        },
+        scattered: new_ray(rec.p, direction, r_in.time),
     };
 };
 

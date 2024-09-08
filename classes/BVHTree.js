@@ -1,6 +1,8 @@
 import * as ti from '../lib/taichi.js';
+import { ray_at } from './Ray.js';
 import { K_AABB, AABB, get_aabb_points } from './AABB.js';
 import { get_interval_axis } from './Interval.js';
+import { get_sphere_aabb } from './Sphere.js';
 import VectorFactory from './Vector.js';
 const vf = new VectorFactory();
 
@@ -13,9 +15,9 @@ const compare_bvh_nodes = (a, b, axis_index) => {
 
 const BVHNode = ti.types.struct({
     parent_index: ti.i32,
-    left_index: ti.i32,
+    is_leaf: ti.i32,
     right_index: ti.i32,
-    next_index: ti.i32,
+    left_index: ti.i32,
     primitive_index: ti.i32,
     bbox: AABB,
 });
@@ -52,14 +54,14 @@ class K_BVHBuilder {
             this.nodes[currentIndex].left_index = -1;
             this.nodes[currentIndex].right_index = -1;
             this.nodes[currentIndex].primitive_index = start;
-            this.nodes[currentIndex].bbox = this.primitives[start].bbox;
+            this.nodes[currentIndex].bbox = this.primitives[start];
             return currentIndex;
         }
 
         // Compute bounds of all primitives in this node
         let centroid_bounds = null;
         for (let i = start; i < end; i++) {
-            const centroid = this.primitives[i].bbox.centroid();
+            const centroid = this.primitives[i].centroid();
             centroid_bounds = centroid_bounds
                 ? K_AABB.surroundingBox(centroid_bounds, new K_AABB(centroid, centroid))
                 : new K_AABB(centroid, centroid);
@@ -69,7 +71,7 @@ class K_BVHBuilder {
 
         // Sort primitives based on the centroid of their bounding boxes
         this.primitives.slice(start, end).sort((a, b) => {
-            return a.bbox.centroid()[axis] - b.bbox.centroid()[axis];
+            return a.centroid()[axis] - b.centroid()[axis];
         });
 
         const mid = start + Math.floor(numPrimitives / 2);
@@ -101,9 +103,15 @@ class K_BVHBuilder {
     }
 }
 
+/**
+ * @param {import("./Hittable.js").Hittable[]} obj_list
+ */
 async function build_bvh_from_obj(obj_list) {
     const primitives = obj_list.map((obj) => {
-        return { bbox: new K_AABB(vf.addVal(obj.center, -obj.radius), vf.addVal(obj.center, obj.radius)) };
+        let bbox = null;
+        // sphere
+        bbox = get_sphere_aabb(obj);
+        return bbox;
     });
 
     const builder = new K_BVHBuilder(primitives);
@@ -112,9 +120,9 @@ async function build_bvh_from_obj(obj_list) {
     const res = builder.nodes.map((node) => {
         return {
             parent_index: node.parent_index,
+            is_leaf: node.right_index === -1 && node.left_index === -1,
             left_index: node.left_index,
-            right_index: node.right_index,
-            next_index: node.next_index,
+            right_index: node.next_index,
             primitive_index: node.primitive_index,
             bbox: get_aabb_points(node.bbox.min, node.bbox.max),
         };

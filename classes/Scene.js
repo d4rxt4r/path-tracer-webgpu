@@ -8,22 +8,44 @@ import { BVHTree, build_bvh_from_obj } from './BVHTree.js';
 
 let Scene = ti.field(Hittable, 0);
 
+const hittable_types = Hittable.memberTypes_;
+const base_obj = {};
+hittable_types.forEach((type, key) => {
+    if (type.primitiveType_ === 'i32') {
+        base_obj[key] = type.numRows_ ? [0, 0, 0] : 0;
+    } else {
+        base_obj[key] = type.numRows_ ? [0.0, 0.0, 0.0] : 0.0;
+    }
+});
+
+/**
+ * @typedef Scene
+ * @property {string} name
+ * @property {import("./classes/Hittable.js").Hittable[]} objects
+ * @property {import("./classes/Material.js").Material[]} materials
+ * @property camera
+ */
+
 /**
  * Initialize the scene
- * @param {object[]} obj_list
- * @param {import("./Material.js").Material[]} mat_list
+ * @param {Scene} scene
  */
-const init_scene = async (obj_list, mat_list) => {
-    Scene = ti.field(Hittable, obj_list.length);
+const init_scene = async (scene) => {
+    const { objects, materials } = scene;
+    Scene = ti.field(Hittable, objects.length);
 
-    await build_bvh_from_obj(obj_list);
+    await build_bvh_from_obj(objects);
 
-    for (let i = 0; i < obj_list.length; i++) {
-        const obj = obj_list[i];
-        await Scene.set([i], obj);
+    for (let i = 0; i < objects.length; i++) {
+        const obj = objects[i];
+
+        await Scene.set([i], {
+            ...base_obj,
+            ...obj,
+        });
     }
 
-    await init_materials(mat_list);
+    await init_materials(materials);
 };
 
 /**
@@ -44,7 +66,7 @@ const hit_scene = (r, ray_t, rec) => {
 
         let local_it = get_interval(ray_t.min, current_t.max);
         if (hit_aabb(r, local_it, current_node.bbox)) {
-            if (current_node.left_index == -1 && current_node.right_index == -1) {
+            if (current_node.is_leaf) {
                 // Leaf node
                 let hit_this = hit_sphere(Scene[current_node.primitive_index], r, local_it, rec);
                 if (hit_this) {
@@ -60,7 +82,7 @@ const hit_scene = (r, ray_t, rec) => {
         }
 
         // Move to the next node in the "rope"
-        current_index = current_node.next_index;
+        current_index = current_node.right_index;
     }
 
     return hit_anything;

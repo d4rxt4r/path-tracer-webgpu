@@ -27,11 +27,27 @@ const set_face_normal = (rec, r, outward_normal) => {
     }
 };
 
+/**
+ * @typedef Hittable
+ * @property {number} type
+ * @property {number} mat
+ * @property {import("./Vector.js").vec3} Q
+ * @property {number} radius
+ * @property {import("./Vector.js").vec3} center
+ * @property {import("./Vector.js").vec3} center2
+ */
+
 const Hittable = ti.types.struct({
     type: ti.i32,
-    center: ti.types.vector(ti.f32, 3),
-    radius: ti.f32,
     mat: ti.i32,
+    // quad
+    Q: ti.types.vector(ti.f32, 3),
+    // u: ti.types.vector(ti.f32, 3),
+    // v: ti.types.vector(ti.f32, 3),
+    // sphere
+    radius: ti.f32,
+    center: ti.types.vector(ti.f32, 3),
+    center2: ti.types.vector(ti.f32, 3),
 });
 
 export { Hittable, set_face_normal };
