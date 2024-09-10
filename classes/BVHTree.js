@@ -105,7 +105,7 @@ class BVHBuilder {
 }
 
 /**
- * @param {import("./Hittable.js").Hittable[]} obj_list
+ * @param {import("./Hittable.js").THittable[]} obj_list
  */
 function build_bvh_from_obj(obj_list) {
     const primitives = obj_list.map((obj) => {

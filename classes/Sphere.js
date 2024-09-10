@@ -1,5 +1,6 @@
 import * as ti from '../lib/taichi.js';
 
+import { PI } from '../const.js';
 import { new_ray, ray_at } from './Ray.js';
 import { set_face_normal } from './Hittable.js';
 import { get_aabb_points, get_aabb_bbox } from './AABB.js';
@@ -37,6 +38,14 @@ const get_sphere_aabb = (sphere) => {
     return get_aabb_points(vf.addVal(center, -radius), vf.addVal(center, radius));
 };
 
+const get_sphere_uv = (p, rec) => {
+    const theta = Math.acos(-p.y);
+    const phi = Math.atan2(-p.z, p.x) + PI;
+
+    rec.u = phi / (2 * PI);
+    rec.v = theta / PI;
+};
+
 /**
  * @param {Sphere} sphere
  * @param {import('./Ray').Ray} r
@@ -72,10 +81,11 @@ const hit_sphere = (sphere, r, ray_t, rec) => {
         rec.p = ray_at(r, rec.t);
         const outward_normal = (rec.p - current_center) / sphere.radius;
         set_face_normal(rec, r, outward_normal);
+        get_sphere_uv(outward_normal, rec);
         rec.mat = sphere.mat;
     }
 
     return res;
 };
 
-export { hit_sphere, get_sphere_center, get_sphere_aabb };
+export { hit_sphere, get_sphere_uv, get_sphere_center, get_sphere_aabb };

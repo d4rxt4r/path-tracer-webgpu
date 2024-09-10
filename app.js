@@ -1,6 +1,6 @@
 import * as ti from './lib/taichi.js';
 
-import { EPS, MAX_F32, OBJ_TYPE, MAT_TYPE } from './const.js';
+import { PI, EPS, MAX_F32, OBJ_TYPE, MAT_TYPE, TEX_TYPE } from './const.js';
 import { throttle, random_f32 } from './classes/Math.js';
 import { linear_to_gamma, process_color } from './classes/Color.js';
 import { new_ray, ray_at, ray_color, get_ray, sample_square, defocus_disk_sample } from './classes/Ray.js';
@@ -15,8 +15,8 @@ import {
     dielectric_scatter,
     emitted_light,
 } from './classes/Material.js';
-import { Hittable, set_face_normal } from './classes/Hittable.js';
-import { hit_sphere, get_sphere_center } from './classes/Sphere.js';
+import { Hittable, new_hit_record, set_face_normal } from './classes/Hittable.js';
+import { hit_sphere, get_sphere_center, get_sphere_uv } from './classes/Sphere.js';
 import { CameraSettingCPU, initialize_camera, get_camera_settings, init_camera_movement } from './classes/Camera.js';
 import { SCENE_LIST } from './scenes.js';
 import {
@@ -32,10 +32,11 @@ import {
 import { get_interval, interval_clamp, interval_surrounds } from './classes/Interval.js';
 import { create_gui, copy_camera_settings } from './classes/GUI.js';
 import { BVHNode } from './classes/BVHTree.js';
+import { Texture, texture_color_value, get_solid_texture_value, get_checker_texture_value } from './classes/Texture.js';
 
 let total_samples = 0;
 const aspectRatio = 16.0 / 9.0;
-const image_width = 800; // document.body.clientWidth;
+const image_width = document.body.clientWidth;
 const image_height = Number.parseInt(image_width / aspectRatio);
 const canvasSize = [image_width, image_height];
 
@@ -51,6 +52,7 @@ init_camera_movement(htmlCanvas, controllers, gui.get_values.bind(gui));
 const BVHTree = ti.field(BVHNode, 1000);
 const Scene = ti.field(Hittable, 1000);
 const Materials = ti.field(Material, 1000);
+const Textures = ti.field(Texture, 100);
 
 const main = async () => {
     await ti.init();
@@ -68,15 +70,18 @@ const main = async () => {
         BVHTree,
         Scene,
         Materials,
+        Textures,
     });
 
-    await init_scene(SCENE_LIST[scene_index], Scene, Materials, BVHTree);
+    await init_scene(SCENE_LIST[scene_index], Scene, BVHTree, Materials, Textures);
 
     ti.addToKernelScope({
+        PI,
         EPS,
         MAX_F32,
         OBJ_TYPE,
         MAT_TYPE,
+        TEX_TYPE,
         // Camera
         initialize_camera,
         // Ray
@@ -88,9 +93,11 @@ const main = async () => {
         ray_color,
         // Hittable
         set_face_normal,
+        new_hit_record,
         hit_scene,
         hit_sphere,
         get_sphere_center,
+        get_sphere_uv,
         // AABB
         hit_aabb,
         get_aabb_axis,
@@ -104,6 +111,10 @@ const main = async () => {
         material_reflectance,
         dielectric_scatter,
         emitted_light,
+        // Textures
+        texture_color_value,
+        get_solid_texture_value,
+        get_checker_texture_value,
         // Vector
         random_range_vec3,
         random_unit_vec3,

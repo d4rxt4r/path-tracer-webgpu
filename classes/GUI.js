@@ -71,8 +71,13 @@ const create_gui = (user_settings = {}) => {
 };
 
 const copy_camera_settings = (user_settings = {}, controllers) => {
-    Object.keys(user_settings).map((key) => {
-        controllers[key].setValue(user_settings[key]);
+    const settings = {
+        ...default_settings,
+        ...user_settings,
+    };
+
+    Object.keys(settings).map((key) => {
+        controllers[key].setValue(settings[key]);
     });
 };
 

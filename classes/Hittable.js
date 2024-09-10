@@ -7,7 +7,21 @@ import * as ti from '../lib/taichi.js';
  * @property {number} mat
  * @property {number} t
  * @property {boolean} front_face
+ * @property {import("./Vector.js").vec3} u
+ * @property {import("./Vector.js").vec3} v
  */
+
+const new_hit_record = () => {
+    return {
+        p: [0.0, 0.0, 0.0],
+        normal: [0.0, 0.0, 0.0],
+        t: 0.0,
+        front_face: true,
+        mat: -1,
+        u: [0.0, 0.0, 0.0],
+        v: [0.0, 0.0, 0.0],
+    };
+};
 
 /**
  * Sets the hit record normal vector.
@@ -28,7 +42,7 @@ const set_face_normal = (rec, r, outward_normal) => {
 };
 
 /**
- * @typedef Hittable
+ * @typedef THittable
  * @property {number} type
  * @property {number} mat
  * @property {import("./Vector.js").vec3} Q
@@ -50,4 +64,4 @@ const Hittable = ti.types.struct({
     center2: ti.types.vector(ti.f32, 3),
 });
 
-export { Hittable, set_face_normal };
+export { Hittable, new_hit_record, set_face_normal };

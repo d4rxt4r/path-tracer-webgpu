@@ -1,5 +1,6 @@
 import * as ti from '../lib/taichi.js';
 
+import { new_hit_record } from './Hittable.js';
 import { hit_scene } from './Scene.js';
 import { MAX_F32 } from '../const.js';
 import { material_scatter, emitted_light } from './Material.js';
@@ -79,13 +80,7 @@ const ray_color = (r, max_depth) => {
     let depth = 0;
     while (depth < max_depth) {
         depth += 1;
-        const rec = {
-            p: [0.0, 0.0, 0.0],
-            normal: [0.0, 0.0, 0.0],
-            t: 0.0,
-            front_face: true,
-            mat: -1,
-        };
+        const rec = new_hit_record();
 
         if (!hit_scene(r, get_interval(ti.f32(0.001), ti.f32(MAX_F32)), rec)) {
             final_color += current_attenuation * background;

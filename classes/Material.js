@@ -2,25 +2,30 @@
 
 import * as ti from '../lib/taichi.js';
 
-import { MAT_TYPE } from '../const.js';
-import { random_unit_vec3, near_zero_vec3, reflect_vec3, refract_vec3 } from './Vector.js';
 import { new_ray } from './Ray.js';
+import { MAT_TYPE, get_record_from_struct } from '../const.js';
+import { random_unit_vec3, near_zero_vec3, reflect_vec3, refract_vec3 } from './Vector.js';
+import { texture_color_value } from './Texture.js';
 
 /**
- * @typedef Material
+ * @typedef TMaterial
  * @property {number} type
- * @property {import('./Vector.js').vec3} attenuation
+ * @property {import('./Vector.js').vec3} attenuation - цвет
+ * @property {number} k - коэффициент
+ * @property {number} tex id
  */
 
 const Material = ti.types.struct({
     type: ti.i32,
     attenuation: ti.types.vector(ti.f32, 3),
     k: ti.f32,
+    tex: ti.i32,
 });
 
+const base_mat = get_record_from_struct(Material);
 const init_materials = async (mat_list, world_materials) => {
     for (let i = 0; i < mat_list.length; i++) {
-        await world_materials.set([i], mat_list[i]);
+        await world_materials.set([i], { ...base_mat, ...mat_list[i] });
     }
 };
 
@@ -28,7 +33,7 @@ const init_materials = async (mat_list, world_materials) => {
  * Calculates the scatter direction and albedo of a ray
  * @param {number} mat_index
  * @param {import('./Ray.js').Ray} r_in
- * @param {import('./Hittable.js').HittableRecord} rec
+ * @param {import('./Hittable.js').HitRecord} rec
  */
 const material_scatter = (mat_index, r_in, rec) => {
     let res = {
@@ -54,7 +59,7 @@ const material_scatter = (mat_index, r_in, rec) => {
  * Scatters a ray according to Lambertian distribution
  * @param {import('./Ray.js').Ray} r_in
  * @param {import('./Hittable.js').HitRecord} rec
- * @param {Material} mat
+ * @param {TMaterial} mat
  */
 const lambertian_scatter = (r_in, rec, mat) => {
     let scatter_direction = rec.normal + random_unit_vec3();
@@ -64,9 +69,14 @@ const lambertian_scatter = (r_in, rec, mat) => {
         scatter_direction = rec.normal;
     }
 
+    let albedo = mat.attenuation;
+    if (mat.tex > 0) {
+        albedo = texture_color_value(mat.tex, rec.u, rec.v, rec.p);
+    }
+
     return {
         scatter: true,
-        albedo: mat.attenuation,
+        albedo,
         scattered: new_ray(rec.p, scatter_direction, r_in.time),
     };
 };
@@ -75,7 +85,7 @@ const lambertian_scatter = (r_in, rec, mat) => {
  * Scatters a ray with metal reflection
  * @param {import('./Ray.js').Ray} r_in
  * @param {import('./Hittable.js').HitRecord} rec
- * @param {Material} mat
+ * @param {TMaterial} mat
  */
 const metal_scatter = (r_in, rec, mat) => {
     let reflected = reflect_vec3(r_in.direction, rec.normal);
@@ -104,7 +114,7 @@ const material_reflectance = (cosine, refraction_index) => {
  * Scatters a ray with dielectric reflection
  * @param {import('./Ray.js').Ray} r_in
  * @param {import('./Hittable.js').HitRecord} rec
- * @param {Material} mat
+ * @param {TMaterial} mat
  */
 const dielectric_scatter = (r_in, rec, mat) => {
     let ri = 1.0 / mat.k;

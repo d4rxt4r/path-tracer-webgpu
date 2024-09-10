@@ -1,4 +1,4 @@
-import { OBJ_TYPE, MAT_TYPE } from './const.js';
+import { OBJ_TYPE, MAT_TYPE, TEX_TYPE } from './const.js';
 import { random_f32 } from './classes/Math.js';
 import VectorFactory from './classes/Vector.js';
 
@@ -52,6 +52,7 @@ const Scene_1 = {
             type: MAT_TYPE.LAMBERTIAN,
             attenuation: [0.8, 0.8, 0.0],
             k: 0,
+            tex: 2,
         },
         {
             type: MAT_TYPE.LAMBERTIAN,
@@ -77,6 +78,18 @@ const Scene_1 = {
             type: MAT_TYPE.LIGHT,
             attenuation: [4.2, 8.0, 4.0],
             k: 1.0,
+        },
+    ],
+    textures: [
+        {
+            type: TEX_TYPE.SOLID,
+            color: [0.4, 0.8, 0.0],
+        },
+        {
+            type: TEX_TYPE.CHECKER,
+            k: 0.32,
+            color: [0.2, 0.3, 0.1],
+            color2: [0.9, 0.9, 0.9],
         },
     ],
     camera: {
@@ -126,6 +139,7 @@ const Scene_2 = {
             type: MAT_TYPE.LAMBERTIAN,
             attenuation: [0.5, 0.5, 0.5],
             k: 0,
+            tex: 1,
         },
         {
             type: MAT_TYPE.DIELECTRIC,
@@ -141,6 +155,14 @@ const Scene_2 = {
             type: MAT_TYPE.METAL,
             attenuation: [0.7, 0.6, 0.5],
             k: 0,
+        },
+    ],
+    textures: [
+        {
+            type: TEX_TYPE.CHECKER,
+            k: 0.32,
+            color: [0.2, 0.3, 0.1],
+            color2: [0.9, 0.9, 0.9],
         },
     ],
     camera: {
