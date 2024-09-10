@@ -3,6 +3,7 @@
 - Loading scene anim
 - More stable and reliable camera movement
 - Render BVH Nodes
+- Objects editor
 
 # Optimizations to made
 - Refactor computational functions

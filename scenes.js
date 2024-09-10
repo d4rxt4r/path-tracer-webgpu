@@ -39,9 +39,10 @@ const Scene_1 = {
             mat: 4,
         },
         {
-            type: OBJ_TYPE.SPHERE,
-            center: [-1.0, 1.2, 0],
-            radius: 0.3,
+            type: OBJ_TYPE.QUAD,
+            Q: [-1.0, 2.0, -2.0],
+            u: [2.0, 0.0, 0.0],
+            v: [0.0, 0.0, 2.0],
             mat: 5,
         },
     ],

@@ -36,6 +36,7 @@ import { Texture, texture_color_value, get_solid_texture_value, get_checker_text
 import { get_quad_bbox, get_quad_d, get_quad_normal, get_quad_w, hit_quad, quad_is_interior } from './classes/Quad.js';
 
 let total_samples = 0;
+let frame_id = null;
 const aspectRatio = 16.0 / 9.0;
 const image_width = document.body.clientWidth;
 const image_height = Number.parseInt(image_width / aspectRatio);
@@ -45,7 +46,7 @@ const htmlCanvas = document.getElementById('canvas');
 htmlCanvas.width = image_width;
 htmlCanvas.height = image_height;
 
-let scene_index = 3;
+let scene_index = 0;
 const { gui, controllers } = create_gui(SCENE_LIST[scene_index].camera);
 
 init_camera_movement(htmlCanvas, controllers, gui.get_values.bind(gui));
@@ -184,7 +185,8 @@ const main = async () => {
             total_samples += 1;
             tone_map(total_samples);
             canvas.setImage(pixelsBuffer);
-            requestAnimationFrame(full_pass);
+
+            frame_id = requestAnimationFrame(full_pass);
         }
     }
 
@@ -198,6 +200,11 @@ const main = async () => {
             return;
         }
 
+        if (frame_id) {
+            cancelAnimationFrame(frame_id);
+            frame_id = null;
+        }
+
         requestAnimationFrame(throttled_fast_pass);
     });
 
@@ -206,7 +213,12 @@ const main = async () => {
             return;
         }
 
-        requestAnimationFrame(full_pass);
+        if (frame_id) {
+            cancelAnimationFrame(frame_id);
+            frame_id = null;
+        }
+
+        full_pass();
     });
 
     fast_pass();
