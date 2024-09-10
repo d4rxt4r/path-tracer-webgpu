@@ -1,8 +1,6 @@
 import * as ti from '../lib/taichi.js';
-import VectorFactory from './Vector.js';
-const vf = new VectorFactory();
 
-import { Interval, get_interval, get_interval_int, interval_size } from './Interval.js';
+import { Interval, get_interval, get_interval_int, interval_size, interval_expand } from './Interval.js';
 
 const AABB = ti.types.struct({
     x: Interval,
@@ -10,60 +8,53 @@ const AABB = ti.types.struct({
     z: Interval,
 });
 
-// TODO: replace K_AABB with functions
-class K_AABB {
-    constructor(min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity]) {
-        this.min = min;
-        this.max = max;
-    }
+const delta = 0.0001;
+const pad_to_minimums_aabb = (aabb) => {
+    // if (interval_size(aabb.x) < delta) {
+    aabb.x = interval_expand(aabb.x, delta);
+    // }
 
-    static surroundingBox(box1, box2) {
-        if (!box1 && !box2) {
-            console.warn('AABB.surroundingBox received two invalid boxes');
-            return new K_AABB();
-        }
-        if (!box1) return new K_AABB(box2.min, box2.max);
-        if (!box2) return new K_AABB(box1.min, box1.max);
+    // if (interval_size(aabb.y) < delta) {
+    aabb.y = interval_expand(aabb.y, delta);
+    // }
 
-        const small = vf.min(box1.min, box2.min);
-        const big = vf.max(box1.max, box2.max);
-        return new K_AABB(small, big);
-    }
+    // if (interval_size(aabb.z) < delta) {
+    aabb.z = interval_expand(aabb.z, delta);
+    // }
 
-    centroid() {
-        return [(this.min[0] + this.max[0]) / 2, (this.min[1] + this.max[1]) / 2, (this.min[2] + this.max[2]) / 2];
-    }
+    return aabb;
+};
 
-    longestAxis() {
-        const d = [this.max[0] - this.min[0], this.max[1] - this.min[1], this.max[2] - this.min[2]];
-        if (d.x > d.y && d.x > d.z) return 0;
-        if (d.y > d.z) return 1;
-        return 2;
-    }
-}
+const get_aabb = () => {
+    return get_aabb_int(get_interval(), get_interval(), get_interval());
+};
 
 const get_aabb_int = (x, y, z) => {
-    return {
-        x: get_interval(x.min, x.max),
-        y: get_interval(y.min, y.max),
-        z: get_interval(z.min, z.max),
-    };
+    return pad_to_minimums_aabb({
+        x: get_interval_int(x.min, x.max),
+        y: get_interval_int(y.min, y.max),
+        z: get_interval_int(z.min, z.max),
+    });
 };
 
 const get_aabb_points = (a, b) => {
-    return {
+    return pad_to_minimums_aabb({
         x: a[0] <= b[0] ? { min: a[0], max: b[0] } : { min: b[0], max: a[0] },
         y: a[1] <= b[1] ? { min: a[1], max: b[1] } : { min: b[1], max: a[1] },
         z: a[2] <= b[2] ? { min: a[2], max: b[2] } : { min: b[2], max: a[2] },
-    };
+    });
 };
 
 const get_aabb_bbox = (box1, box2) => {
-    return {
+    return pad_to_minimums_aabb({
         x: get_interval_int(box1.x, box2.x),
         y: get_interval_int(box1.y, box2.y),
         z: get_interval_int(box1.z, box2.z),
-    };
+    });
+};
+
+const get_aabb_centroid = (aabb) => {
+    return [(aabb.x.min + aabb.x.max) / 2, (aabb.y.min + aabb.y.max) / 2, (aabb.z.min + aabb.z.max) / 2];
 };
 
 const get_aabb_axis = (aabb, n) => {
@@ -127,4 +118,15 @@ const hit_aabb = (r, ray_t, aabb) => {
     return res;
 };
 
-export { AABB, K_AABB, get_aabb_int, get_aabb_points, get_aabb_bbox, get_aabb_axis, hit_aabb, get_longest_aabb_axis };
+export {
+    AABB,
+    pad_to_minimums_aabb,
+    get_aabb,
+    get_aabb_int,
+    get_aabb_points,
+    get_aabb_bbox,
+    get_aabb_centroid,
+    get_aabb_axis,
+    hit_aabb,
+    get_longest_aabb_axis,
+};

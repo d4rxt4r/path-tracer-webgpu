@@ -1,5 +1,6 @@
 # Features to add
-- Switch scenes in GUI
+- make background color adjustable
+- Loading scene anim
 - Add rerender button
 - More stable and reliable camera movement
 - Render BVH Nodes
@@ -11,7 +12,6 @@
 - Use custom randomizer to prevent similarity in samples
 
 # Path tracer features to add
-- Motion blur?
 - Textures
 - Quads
 - Rotation and Translation (Instancing)

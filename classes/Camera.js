@@ -132,7 +132,7 @@ const get_camera_settings = (settings, image_width, image_height) => {
     };
 };
 
-function init_camera_movement(canvas, controllers, get_values, render_func) {
+function init_camera_movement(canvas, controllers, get_values) {
     let camera_moving = false;
 
     function move_camera_at(event) {
@@ -194,6 +194,7 @@ function init_camera_movement(canvas, controllers, get_values, render_func) {
         x: 0,
         y: 0,
     };
+
     canvas.addEventListener('mousedown', (event) => {
         prev_mouse_pos.x = event.pageX;
         prev_mouse_pos.y = event.pageY;
@@ -201,14 +202,11 @@ function init_camera_movement(canvas, controllers, get_values, render_func) {
     });
     canvas.addEventListener('mouseup', () => {
         camera_moving = false;
-        render_func();
     });
+
     canvas.addEventListener('mousemove', throttledMoveAt);
 
     window.addEventListener('keydown', throttledMove);
-    window.addEventListener('keyup', () => {
-        render_func();
-    });
 }
 
 export { CameraSetting, CameraSettingCPU, initialize_camera, get_camera_settings, init_camera_movement };

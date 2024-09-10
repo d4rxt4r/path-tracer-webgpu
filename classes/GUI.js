@@ -36,7 +36,7 @@ const default_settings = {
     focus_dist: 10.0,
 };
 
-const createGui = (user_settings = {}) => {
+const create_gui = (user_settings = {}) => {
     // eslint-disable-next-line no-undef
     const gui = new lil.GUI();
 
@@ -70,4 +70,10 @@ const createGui = (user_settings = {}) => {
     };
 };
 
-export { createGui };
+const copy_camera_settings = (user_settings = {}, controllers) => {
+    Object.keys(user_settings).map((key) => {
+        controllers[key].setValue(user_settings[key]);
+    });
+};
+
+export { create_gui, copy_camera_settings };

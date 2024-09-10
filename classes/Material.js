@@ -1,4 +1,7 @@
+/* global Materials */
+
 import * as ti from '../lib/taichi.js';
+
 import { MAT_TYPE } from '../const.js';
 import { random_unit_vec3, near_zero_vec3, reflect_vec3, refract_vec3 } from './Vector.js';
 import { new_ray } from './Ray.js';
@@ -15,13 +18,9 @@ const Material = ti.types.struct({
     k: ti.f32,
 });
 
-let Materials = ti.field(Material, 0);
-
-const init_materials = async (mat_list) => {
-    Materials = ti.field(Material, mat_list.length);
-
+const init_materials = async (mat_list, world_materials) => {
     for (let i = 0; i < mat_list.length; i++) {
-        await Materials.set([i], mat_list[i]);
+        await world_materials.set([i], mat_list[i]);
     }
 };
 
@@ -135,12 +134,15 @@ const emitted_light = (matId) => {
     const mat = Materials[matId];
     if (mat.type === MAT_TYPE.LIGHT) {
         res = mat.attenuation;
+        if (mat.k > 0) {
+            res *= mat.k;
+        }
     }
     return res;
 };
 
 export {
-    Materials,
+    Material,
     init_materials,
     material_scatter,
     lambertian_scatter,

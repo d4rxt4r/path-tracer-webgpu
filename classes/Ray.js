@@ -1,4 +1,5 @@
 import * as ti from '../lib/taichi.js';
+
 import { hit_scene } from './Scene.js';
 import { MAX_F32 } from '../const.js';
 import { material_scatter, emitted_light } from './Material.js';
@@ -73,7 +74,7 @@ const get_ray = (i, j, camera_settings) => {
 const ray_color = (r, max_depth) => {
     let final_color = [0.0, 0.0, 0.0];
     let current_attenuation = [1.0, 1.0, 1.0];
-    const background = [0.0, 0.1, 0.2];
+    const background = [0.7, 0.8, 0.9];
 
     let depth = 0;
     while (depth < max_depth) {

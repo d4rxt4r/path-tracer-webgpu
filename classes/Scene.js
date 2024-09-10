@@ -1,12 +1,11 @@
-import * as ti from '../lib/taichi.js';
+/* global BVHTree, Scene */
+
 import { Hittable } from './Hittable.js';
 import { hit_sphere } from './Sphere.js';
 import { init_materials } from './Material.js';
 import { get_interval } from './Interval.js';
 import { hit_aabb } from './AABB.js';
-import { BVHTree, build_bvh_from_obj } from './BVHTree.js';
-
-let Scene = ti.field(Hittable, 0);
+import { build_bvh_from_obj } from './BVHTree.js';
 
 const hittable_types = Hittable.memberTypes_;
 const base_obj = {};
@@ -28,24 +27,22 @@ hittable_types.forEach((type, key) => {
 
 /**
  * Initialize the scene
- * @param {Scene} scene
+ * @param {Scene} scene_data
  */
-const init_scene = async (scene) => {
-    const { objects, materials } = scene;
-    Scene = ti.field(Hittable, objects.length);
-
-    await build_bvh_from_obj(objects);
-
+const init_scene = async (scene_data, scene_field, materials_field, bvh_tree_field) => {
+    const { objects, materials } = scene_data;
     for (let i = 0; i < objects.length; i++) {
         const obj = objects[i];
-
-        await Scene.set([i], {
+        await scene_field.set([i], {
             ...base_obj,
             ...obj,
         });
     }
-
-    await init_materials(materials);
+    await init_materials(materials, materials_field);
+    const tree = build_bvh_from_obj(objects);
+    for (let i = 0; i < tree.length; i++) {
+        await bvh_tree_field.set([i], tree[i]);
+    }
 };
 
 /**
@@ -88,4 +85,4 @@ const hit_scene = (r, ray_t, rec) => {
     return hit_anything;
 };
 
-export { Scene, init_scene, hit_scene };
+export { init_scene, hit_scene };

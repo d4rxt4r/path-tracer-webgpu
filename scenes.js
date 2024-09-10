@@ -76,13 +76,19 @@ const Scene_1 = {
         {
             type: MAT_TYPE.LIGHT,
             attenuation: [4.2, 8.0, 4.0],
-            k: 0.0,
+            k: 1.0,
         },
     ],
     camera: {
-        scene: 0
-    }
-}
+        scene: 0,
+        cam_x: 0,
+        cam_y: 0.5,
+        cam_z: 2,
+        at_x: 0.0,
+        at_y: 0.0,
+        at_z: -1.0,
+    },
+};
 
 /**
  * @type {import("./classes/Scene.js").Scene}
@@ -150,8 +156,8 @@ const Scene_2 = {
         vfov: 20,
         defocus_angle: 0.6,
         focus_dist: 10.0,
-    }
-}
+    },
+};
 
 for (let a = -11; a < 11; a++) {
     for (let b = -11; b < 11; b++) {
@@ -179,7 +185,7 @@ for (let a = -11; a < 11; a++) {
                     attenuation: albedo,
                     k: 0,
                 });
-                const center2 = vf.add(center, [0, random_f32(0,.5), 0]);
+                const center2 = vf.add(center, [0, random_f32(0, 0.5), 0]);
                 Scene_2.objects.push({
                     type: OBJ_TYPE.SPHERE,
                     center,
@@ -220,7 +226,71 @@ for (let a = -11; a < 11; a++) {
     }
 }
 
-const SCENE_LIST = [Scene_1, Scene_2];
-const SCENE_SELECT = Object.fromEntries(SCENE_LIST.map((scene, key) => [scene.name, key]))
+/**
+ * @type {import("./classes/Scene.js").Scene}
+ */
+const Scene_3 = {
+    name: 'Perlin Noise',
+    objects: [
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [0.0, -1000.0, 0.0],
+            radius: 1000.0,
+            mat: 0,
+        },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [0.0, 2.0, 0.0],
+            radius: 2.0,
+            mat: 1,
+        },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [0.0, 2.0, 0.0],
+            radius: 1.0,
+            mat: 2,
+        },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [0.0, 2.0, 0.0],
+            radius: 0.2,
+            mat: 3,
+        },
+    ],
+    materials: [
+        {
+            type: MAT_TYPE.METAL,
+            attenuation: [0.8, 0.9, 0.8],
+            k: 0.5,
+        },
+        {
+            type: MAT_TYPE.DIELECTRIC,
+            attenuation: [1.0, 1.0, 1.0],
+            k: 1.4,
+        },
+        {
+            type: MAT_TYPE.DIELECTRIC,
+            attenuation: [1.0, 1.0, 1.0],
+            k: 1 / 1.4,
+        },
+        {
+            type: MAT_TYPE.LIGHT,
+            attenuation: [1.0, 1.0, 1.0],
+            k: 1.0,
+        },
+    ],
+    camera: {
+        scene: 2,
+        cam_x: 13,
+        cam_y: 2,
+        cam_z: 3,
+        at_x: 0,
+        at_y: 1,
+        at_z: 0,
+    },
+};
 
-export { SCENE_LIST, SCENE_SELECT, Scene_1, Scene_2 };
+const SCENE_LIST = [Scene_1, Scene_2, Scene_3];
+const SCENE_SELECT = Object.fromEntries(SCENE_LIST.map((scene, key) => [scene.name, key]));
+
+export { SCENE_LIST, SCENE_SELECT };
