@@ -4,6 +4,7 @@ const MAX_F32 = 2147483647;
 
 const OBJ_TYPE = {
     SPHERE: 1,
+    QUAD: 2,
 };
 
 const MAT_TYPE = {

@@ -170,4 +170,6 @@ export {
     refract_vec3,
 };
 
-export default VectorFactory;
+const vf = new VectorFactory();
+
+export default vf;

@@ -4,6 +4,7 @@ import { OBJ_TYPE } from '../const.js';
 import { AABB, get_aabb, get_aabb_points, get_longest_aabb_axis, get_aabb_bbox, get_aabb_centroid } from './AABB.js';
 import { get_interval_axis } from './Interval.js';
 import { get_sphere_aabb } from './Sphere.js';
+import { get_quad_bbox } from './Quad.js';
 
 const BVHNode = ti.types.struct({
     parent_index: ti.i32,
@@ -112,6 +113,9 @@ function build_bvh_from_obj(obj_list) {
         let bbox = null;
         if (obj.type === OBJ_TYPE.SPHERE) {
             bbox = get_sphere_aabb(obj);
+        }
+        if (obj.type === OBJ_TYPE.QUAD) {
+            bbox = get_quad_bbox(obj);
         }
         return bbox;
     });

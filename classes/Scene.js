@@ -1,8 +1,9 @@
 /* global BVHTree, Scene */
 
-import { get_record_from_struct } from '../const.js';
+import { get_record_from_struct, OBJ_TYPE } from '../const.js';
 import { Hittable } from './Hittable.js';
 import { hit_sphere } from './Sphere.js';
+import { hit_quad } from './Quad.js';
 import { init_materials } from './Material.js';
 import { get_interval } from './Interval.js';
 import { hit_aabb } from './AABB.js';
@@ -41,6 +42,17 @@ const init_scene = async (scene_data, scene_field, bvh_tree_field, materials_fie
     }
 };
 
+const hit_object = (obj, r, ray_t, rec) => {
+    let res = false;
+    if (obj.type === OBJ_TYPE.SPHERE) {
+        res = hit_sphere(obj, r, ray_t, rec);
+    }
+    if (obj.type === OBJ_TYPE.QUAD) {
+        res = hit_quad(obj, r, ray_t, rec);
+    }
+    return res;
+};
+
 /**
  * Checks if a ray intersects with any object in the scene.
  * @param {import("./Ray.js").Ray} r
@@ -61,7 +73,8 @@ const hit_scene = (r, ray_t, rec) => {
         if (hit_aabb(r, local_it, current_node.bbox)) {
             if (current_node.is_leaf) {
                 // Leaf node
-                let hit_this = hit_sphere(Scene[current_node.primitive_index], r, local_it, rec);
+                const obj = Scene[current_node.primitive_index];
+                let hit_this = hit_object(obj, r, local_it, rec);
                 if (hit_this) {
                     hit_anything = true;
                     current_t.max = rec.t;
@@ -81,4 +94,4 @@ const hit_scene = (r, ray_t, rec) => {
     return hit_anything;
 };
 
-export { init_scene, hit_scene };
+export { init_scene, hit_object, hit_scene };

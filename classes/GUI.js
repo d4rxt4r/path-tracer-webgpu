@@ -34,6 +34,8 @@ const default_settings = {
 
     defocus_angle: 0.0,
     focus_dist: 10.0,
+
+    background: [200, 220, 250],
 };
 
 const create_gui = (user_settings = {}) => {
@@ -45,7 +47,15 @@ const create_gui = (user_settings = {}) => {
         ...user_settings,
     };
 
-    const controllers = Object.fromEntries(Object.keys(settings).map((key) => [key, gui.add(settings, key)]));
+    const controllers = Object.fromEntries(
+        Object.keys(settings).map((key) => {
+            if (key === 'background') {
+                return [key, gui.addColor(settings, key, 255)];
+            }
+
+            return [key, gui.add(settings, key)];
+        }),
+    );
 
     controllers.scene.options(SCENE_SELECT);
     controllers.at_x.step(0.01).listen(false);

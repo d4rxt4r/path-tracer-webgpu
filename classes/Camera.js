@@ -1,9 +1,9 @@
 import * as ti from '../lib/taichi.js';
 
 import { degrees_to_radians, round, throttle } from './Math.js';
-import VectorFactory from './Vector.js';
+import { hex2rgb } from './Color.js';
 
-const vf = new VectorFactory();
+import vf from './Vector.js';
 
 const CameraSettingCPU = ti.types.struct({
     pixel00_loc_x: ti.f32,
@@ -26,6 +26,7 @@ const CameraSettingCPU = ti.types.struct({
     defocus_disk_v_y: ti.f32,
     defocus_disk_v_z: ti.f32,
     max_depth: ti.i32,
+    background: ti.types.vector(ti.f32, 3),
 });
 
 /**
@@ -49,6 +50,7 @@ const CameraSetting = ti.types.struct({
     defocus_disk_u: ti.types.vector(ti.f32, 3),
     defocus_disk_v: ti.types.vector(ti.f32, 3),
     max_depth: ti.i32,
+    background: ti.types.vector(ti.f32, 3),
 });
 
 /**
@@ -65,6 +67,7 @@ const initialize_camera = (cam_set_cpu) => {
         defocus_disk_u: [cam_set_cpu.defocus_disk_u_x, cam_set_cpu.defocus_disk_u_y, cam_set_cpu.defocus_disk_u_z],
         defocus_disk_v: [cam_set_cpu.defocus_disk_v_x, cam_set_cpu.defocus_disk_v_y, cam_set_cpu.defocus_disk_v_z],
         max_depth: cam_set_cpu.max_depth,
+        background: cam_set_cpu.background,
     };
 };
 
@@ -108,7 +111,10 @@ const get_camera_settings = (settings, image_width, image_height) => {
     const defocus_disk_u = vf.scale(u, defocus_radius);
     const defocus_disk_v = vf.scale(v, defocus_radius);
 
+    const background = hex2rgb(settings.background);
+
     return {
+        camera_center: camera_center,
         camera_center_x: camera_center[0],
         camera_center_y: camera_center[1],
         camera_center_z: camera_center[2],
@@ -129,6 +135,7 @@ const get_camera_settings = (settings, image_width, image_height) => {
         defocus_disk_v_x: defocus_disk_v[0],
         defocus_disk_v_y: defocus_disk_v[1],
         defocus_disk_v_z: defocus_disk_v[2],
+        background: [background.r / 255, background.g / 255, background.b / 255],
     };
 };
 

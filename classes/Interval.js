@@ -40,9 +40,9 @@ const get_interval_int = (a, b) => {
     return res;
 };
 const interval_size = (int) => int.max - int.min;
-const interval_contains = (x, int) => int.min <= x && x <= int.max;
-const interval_surrounds = (x, int) => int.min < x && x < int.max;
-const interval_clamp = (x, int) => {
+const interval_contains = (int, x) => int.min <= x && x <= int.max;
+const interval_surrounds = (int, x) => int.min < x && x < int.max;
+const interval_clamp = (int, x) => {
     let res = x;
     if (x < int.min) res = int.min;
     if (x > int.max) res = int.max;

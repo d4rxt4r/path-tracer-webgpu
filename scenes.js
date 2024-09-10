@@ -1,8 +1,6 @@
 import { OBJ_TYPE, MAT_TYPE, TEX_TYPE } from './const.js';
 import { random_f32 } from './classes/Math.js';
-import VectorFactory from './classes/Vector.js';
-
-const vf = new VectorFactory();
+import vf from './classes/Vector.js';
 
 /**
  * @type {import("./classes/Scene.js").Scene}
@@ -93,6 +91,7 @@ const Scene_1 = {
         },
     ],
     camera: {
+        background: [10, 20, 30],
         scene: 0,
         cam_x: 0,
         cam_y: 0.5,
@@ -107,7 +106,7 @@ const Scene_1 = {
  * @type {import("./classes/Scene.js").Scene}
  */
 const Scene_2 = {
-    name: 'Moving Spheres',
+    name: 'Bouncing Spheres',
     objects: [
         {
             type: OBJ_TYPE.SPHERE,
@@ -166,6 +165,7 @@ const Scene_2 = {
         },
     ],
     camera: {
+        background: [0.7 * 255, 0.8 * 255, 255],
         scene: 1,
         cam_x: 13,
         cam_y: 2,
@@ -281,9 +281,9 @@ const Scene_3 = {
     ],
     materials: [
         {
-            type: MAT_TYPE.METAL,
+            type: MAT_TYPE.LAMBERTIAN,
             attenuation: [0.8, 0.9, 0.8],
-            k: 0.5,
+            tex: 1,
         },
         {
             type: MAT_TYPE.DIELECTRIC,
@@ -301,6 +301,14 @@ const Scene_3 = {
             k: 1.0,
         },
     ],
+    textures: [
+        {
+            type: TEX_TYPE.CHECKER,
+            k: 0.32,
+            color: [0.0, 0.0, 0.0],
+            color2: [1.0, 0.0, 0.9],
+        },
+    ],
     camera: {
         scene: 2,
         cam_x: 13,
@@ -312,7 +320,83 @@ const Scene_3 = {
     },
 };
 
-const SCENE_LIST = [Scene_1, Scene_2, Scene_3];
+/**
+ * @type {import("./classes/Scene.js").Scene}
+ */
+const Scene_4 = {
+    name: 'Quads Test',
+    objects: [
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [-3, -2, 5],
+            u: [0, 0, -4],
+            v: [0, 4, 0],
+            mat: 0,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [-2, -2, 0],
+            u: [4, 0, 0],
+            v: [0, 4, 0],
+            mat: 1,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [3, -2, 1],
+            u: [0, 0, 4],
+            v: [0, 4, 0],
+            mat: 2,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [-2, 3, 1],
+            u: [4, 0, 0],
+            v: [0, 0, 4],
+            mat: 3,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [-2, -3, 5],
+            u: [4, 0, 0],
+            v: [0, 0, -4],
+            mat: 4,
+        },
+    ],
+    materials: [
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [1.0, 0.2, 0.2],
+        },
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [0.2, 1.0, 0.2],
+        },
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [0.2, 0.2, 1.0],
+        },
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [1.0, 0.5, 0.0],
+        },
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [0.2, 0.8, 0.8],
+        },
+    ],
+    camera: {
+        scene: 3,
+        vfov: 80,
+        cam_x: 0,
+        cam_y: 0,
+        cam_z: 9,
+        at_x: 0.0,
+        at_y: 0.0,
+        at_z: 0.0,
+    },
+};
+
+const SCENE_LIST = [Scene_1, Scene_2, Scene_3, Scene_4];
 const SCENE_SELECT = Object.fromEntries(SCENE_LIST.map((scene, key) => [scene.name, key]));
 
 export { SCENE_LIST, SCENE_SELECT };

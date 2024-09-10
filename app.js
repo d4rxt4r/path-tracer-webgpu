@@ -4,7 +4,7 @@ import { PI, EPS, MAX_F32, OBJ_TYPE, MAT_TYPE, TEX_TYPE } from './const.js';
 import { throttle, random_f32 } from './classes/Math.js';
 import { linear_to_gamma, process_color } from './classes/Color.js';
 import { new_ray, ray_at, ray_color, get_ray, sample_square, defocus_disk_sample } from './classes/Ray.js';
-import { init_scene, hit_scene } from './classes/Scene.js';
+import { init_scene, hit_object, hit_scene } from './classes/Scene.js';
 import { hit_aabb, get_aabb_axis } from './classes/AABB.js';
 import {
     Material,
@@ -29,10 +29,11 @@ import {
     reflect_vec3,
     refract_vec3,
 } from './classes/Vector.js';
-import { get_interval, interval_clamp, interval_surrounds } from './classes/Interval.js';
+import { get_interval, interval_clamp, interval_contains, interval_surrounds } from './classes/Interval.js';
 import { create_gui, copy_camera_settings } from './classes/GUI.js';
 import { BVHNode } from './classes/BVHTree.js';
 import { Texture, texture_color_value, get_solid_texture_value, get_checker_texture_value } from './classes/Texture.js';
+import { get_quad_bbox, get_quad_d, get_quad_normal, get_quad_w, hit_quad, quad_is_interior } from './classes/Quad.js';
 
 let total_samples = 0;
 const aspectRatio = 16.0 / 9.0;
@@ -44,7 +45,7 @@ const htmlCanvas = document.getElementById('canvas');
 htmlCanvas.width = image_width;
 htmlCanvas.height = image_height;
 
-let scene_index = 0;
+let scene_index = 3;
 const { gui, controllers } = create_gui(SCENE_LIST[scene_index].camera);
 
 init_camera_movement(htmlCanvas, controllers, gui.get_values.bind(gui));
@@ -94,10 +95,19 @@ const main = async () => {
         // Hittable
         set_face_normal,
         new_hit_record,
+        // Scene
         hit_scene,
+        hit_object,
+        // Primitives
         hit_sphere,
         get_sphere_center,
         get_sphere_uv,
+        hit_quad,
+        get_quad_bbox,
+        get_quad_normal,
+        get_quad_d,
+        get_quad_w,
+        quad_is_interior,
         // AABB
         hit_aabb,
         get_aabb_axis,
@@ -128,6 +138,7 @@ const main = async () => {
         get_interval,
         interval_clamp,
         interval_surrounds,
+        interval_contains,
         // Math
         random_f32,
     });
@@ -138,7 +149,7 @@ const main = async () => {
             const i = I[0];
             const j = I[1];
             const ray = get_ray(i, j, camera_settings);
-            colorBuffer[I] += ray_color(ray, camera_settings.max_depth);
+            colorBuffer[I] += ray_color(ray, camera_settings.background, camera_settings.max_depth);
         }
     });
 

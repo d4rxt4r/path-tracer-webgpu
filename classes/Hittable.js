@@ -46,6 +46,8 @@ const set_face_normal = (rec, r, outward_normal) => {
  * @property {number} type
  * @property {number} mat
  * @property {import("./Vector.js").vec3} Q
+ * @property {import("./Vector.js").vec3} u
+ * @property {import("./Vector.js").vec3} v
  * @property {number} radius
  * @property {import("./Vector.js").vec3} center
  * @property {import("./Vector.js").vec3} center2
@@ -56,8 +58,8 @@ const Hittable = ti.types.struct({
     mat: ti.i32,
     // quad
     Q: ti.types.vector(ti.f32, 3),
-    // u: ti.types.vector(ti.f32, 3),
-    // v: ti.types.vector(ti.f32, 3),
+    u: ti.types.vector(ti.f32, 3),
+    v: ti.types.vector(ti.f32, 3),
     // sphere
     radius: ti.f32,
     center: ti.types.vector(ti.f32, 3),

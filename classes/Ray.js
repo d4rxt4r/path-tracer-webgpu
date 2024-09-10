@@ -72,10 +72,10 @@ const get_ray = (i, j, camera_settings) => {
  * @param {number} max_depth
  * @return {import('./Vector').vec4} color
  */
-const ray_color = (r, max_depth) => {
+const ray_color = (r, background_color, max_depth) => {
     let final_color = [0.0, 0.0, 0.0];
     let current_attenuation = [1.0, 1.0, 1.0];
-    const background = [0.7, 0.8, 0.9];
+    const background = background_color;
 
     let depth = 0;
     while (depth < max_depth) {

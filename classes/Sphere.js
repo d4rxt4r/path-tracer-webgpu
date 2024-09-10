@@ -5,8 +5,7 @@ import { new_ray, ray_at } from './Ray.js';
 import { set_face_normal } from './Hittable.js';
 import { get_aabb_points, get_aabb_bbox } from './AABB.js';
 import { interval_surrounds } from './Interval.js';
-import VectorFactory from './Vector.js';
-const vf = new VectorFactory();
+import vf from './Vector.js';
 
 /**
  * @typedef Sphere
@@ -68,21 +67,23 @@ const hit_sphere = (sphere, r, ray_t, rec) => {
         res = false;
     }
 
-    const sqrtd = Math.sqrt(discriminant);
-
-    let root = (h - sqrtd) / a;
-    if (!interval_surrounds(root, ray_t)) {
-        root = (h + sqrtd) / a;
-        if (!interval_surrounds(root, ray_t)) res = false;
-    }
-
     if (res) {
-        rec.t = root;
-        rec.p = ray_at(r, rec.t);
-        const outward_normal = (rec.p - current_center) / sphere.radius;
-        set_face_normal(rec, r, outward_normal);
-        get_sphere_uv(outward_normal, rec);
-        rec.mat = sphere.mat;
+        const sqrtd = Math.sqrt(discriminant);
+
+        let root = (h - sqrtd) / a;
+        if (!interval_surrounds(ray_t, root)) {
+            root = (h + sqrtd) / a;
+            if (!interval_surrounds(ray_t, root)) res = false;
+        }
+
+        if (res) {
+            rec.t = root;
+            rec.p = ray_at(r, rec.t);
+            const outward_normal = (rec.p - current_center) / sphere.radius;
+            set_face_normal(rec, r, outward_normal);
+            get_sphere_uv(outward_normal, rec);
+            rec.mat = sphere.mat;
+        }
     }
 
     return res;

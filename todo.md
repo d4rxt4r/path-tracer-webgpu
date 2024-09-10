@@ -1,7 +1,6 @@
 # Features to add
-- make background color adjustable
-- Loading scene anim
 - Add rerender button
+- Loading scene anim
 - More stable and reliable camera movement
 - Render BVH Nodes
 
@@ -12,8 +11,9 @@
 - Use custom randomizer to prevent similarity in samples
 
 # Path tracer features to add
-- Textures
-- Quads
+- Textures (from image)
+- Noise
+- Height Maps
 - Rotation and Translation (Instancing)
 - Volumes (Fog)
 - PDFs (Light sampling)
