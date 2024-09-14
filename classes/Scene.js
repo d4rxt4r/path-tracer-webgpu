@@ -1,6 +1,9 @@
 /* global BVHTree, Scene */
+import * as ti from '../lib/taichi.js';
 
 import { get_record_from_struct, OBJ_TYPE } from '../const.js';
+import { get_rotation_matrix } from './Vector.js';
+import { translate_ray, rotate_ray } from './Ray.js';
 import { Hittable } from './Hittable.js';
 import { hit_sphere } from './Sphere.js';
 import { hit_quad } from './Quad.js';
@@ -44,12 +47,37 @@ const init_scene = async (scene_data, scene_field, bvh_tree_field, materials_fie
 
 const hit_object = (obj, r, ray_t, rec) => {
     let res = false;
+
+    const has_offset = ti.sum(obj.offset) !== 0;
+    const has_rotation = ti.sum(obj.rotation) !== 0;
+
+    let ray = r;
+
+    if (has_rotation) {
+        ray = rotate_ray(r, obj.rotation);
+    }
+    if (has_offset) {
+        ray = translate_ray(r, obj.offset);
+    }
+
     if (obj.type === OBJ_TYPE.SPHERE) {
-        res = hit_sphere(obj, r, ray_t, rec);
+        res = hit_sphere(obj, ray, ray_t, rec);
     }
     if (obj.type === OBJ_TYPE.QUAD) {
-        res = hit_quad(obj, r, ray_t, rec);
+        res = hit_quad(obj, ray, ray_t, rec);
     }
+
+    if (res) {
+        if (has_offset) {
+            rec.p += obj.offset;
+        }
+        if (has_rotation) {
+            const rot_mat = get_rotation_matrix(-obj.rotation);
+            rec.p = ti.matmul(rot_mat, rec.p);
+            rec.normal = ti.matmul(rot_mat, rec.normal);
+        }
+    }
+
     return res;
 };
 

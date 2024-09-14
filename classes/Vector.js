@@ -1,7 +1,7 @@
 import * as ti from '../lib/taichi.js';
 
 import { EPS } from '../const.js';
-import { random_f32 } from './Math.js';
+import { random_f32, degrees_to_radians } from './Math.js';
 
 /**
  * @typedef vec3
@@ -157,6 +157,27 @@ const near_zero_vec3 = (vec) => {
     return ti.abs(vec.x) < EPS && ti.abs(vec.y) < EPS && ti.abs(vec.z) < EPS;
 };
 
+const get_rotation_matrix = (rotation) => {
+    const rad_x = degrees_to_radians(-rotation.x);
+    const rad_y = degrees_to_radians(-rotation.y);
+    const rad_z = degrees_to_radians(-rotation.z);
+
+    const cos_x = Math.cos(rad_x);
+    const sin_x = Math.sin(rad_x);
+    const cos_y = Math.cos(rad_y);
+    const sin_y = Math.sin(rad_y);
+    const cos_z = Math.cos(rad_z);
+    const sin_z = Math.sin(rad_z);
+    // Combine rotation matrices
+    const rot_mat = [
+        [cos_z * cos_y, -sin_z, sin_y],
+        [sin_z, cos_z * cos_x, -sin_x],
+        [-sin_y, sin_x, cos_y * cos_x],
+    ];
+
+    return rot_mat;
+};
+
 export {
     random_f32,
     random_vec3,
@@ -168,6 +189,7 @@ export {
     near_zero_vec3,
     reflect_vec3,
     refract_vec3,
+    get_rotation_matrix,
 };
 
 const vf = new VectorFactory();

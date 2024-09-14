@@ -1,5 +1,8 @@
 import * as ti from '../lib/taichi.js';
 
+import { MAX_F32 } from '../const.js';
+import { degrees_to_radians } from './Math.js';
+
 import { Interval, get_interval, get_interval_int, interval_size, interval_expand } from './Interval.js';
 
 const AABB = ti.types.struct({
@@ -10,18 +13,9 @@ const AABB = ti.types.struct({
 
 const delta = 0.0001;
 const pad_to_minimums_aabb = (aabb) => {
-    // if (interval_size(aabb.x) < delta) {
     aabb.x = interval_expand(aabb.x, delta);
-    // }
-
-    // if (interval_size(aabb.y) < delta) {
     aabb.y = interval_expand(aabb.y, delta);
-    // }
-
-    // if (interval_size(aabb.z) < delta) {
     aabb.z = interval_expand(aabb.z, delta);
-    // }
-
     return aabb;
 };
 
@@ -31,9 +25,9 @@ const get_aabb = () => {
 
 const get_aabb_int = (x, y, z) => {
     return pad_to_minimums_aabb({
-        x: get_interval_int(x.min, x.max),
-        y: get_interval_int(y.min, y.max),
-        z: get_interval_int(z.min, z.max),
+        x,
+        y,
+        z,
     });
 };
 
@@ -118,6 +112,71 @@ const hit_aabb = (r, ray_t, aabb) => {
     return res;
 };
 
+const translate_aabb = (aabb, offset) => {
+    if (!offset) {
+        return aabb;
+    }
+
+    return get_aabb_int(
+        get_interval(aabb.x.min + offset[0], aabb.x.max + offset[0]),
+        get_interval(aabb.y.min + offset[1], aabb.y.max + offset[1]),
+        get_interval(aabb.z.min + offset[2], aabb.z.max + offset[2]),
+    );
+};
+
+/**
+ * @param {AABB } aabb
+ * @param {import('./Vector.js').vec3} rotation
+ */
+const rotate_aabb = (aabb, rotation) => {
+    if (!rotation) {
+        return aabb;
+    }
+
+    const min = [MAX_F32, MAX_F32, MAX_F32];
+    const max = [-MAX_F32, -MAX_F32, -MAX_F32];
+
+    for (let r = 0; r < 3; r++) {
+        const radians = degrees_to_radians(rotation[r]);
+        const sin_theta = Math.sin(radians);
+        const cos_theta = Math.cos(radians);
+
+        for (let i = 0; i < 2; i++) {
+            for (let j = 0; j < 2; j++) {
+                for (let k = 0; k < 2; k++) {
+                    const x = i * aabb.x.max + (1 - i) * aabb.x.min;
+                    const y = j * aabb.y.max + (1 - j) * aabb.y.min;
+                    const z = k * aabb.z.max + (1 - k) * aabb.z.min;
+
+                    let tester;
+                    if (r === 0) {
+                        const newx = cos_theta * x - sin_theta * y;
+                        const newz = sin_theta * x + cos_theta * y;
+                        tester = [x, newx, newz];
+                    }
+                    if (r === 1) {
+                        const newx = cos_theta * x + sin_theta * z;
+                        const newz = -sin_theta * x + cos_theta * z;
+                        tester = [newx, y, newz];
+                    }
+                    if (r === 2) {
+                        const newx = cos_theta * y - sin_theta * z;
+                        const newy = sin_theta * y + cos_theta * z;
+                        tester = [newx, newy, z];
+                    }
+
+                    for (let c = 0; c < 3; c++) {
+                        min[c] = Math.min(min[c], tester[c]);
+                        max[c] = Math.max(max[c], tester[c]);
+                    }
+                }
+            }
+        }
+    }
+
+    return get_aabb_points(min, max);
+};
+
 export {
     AABB,
     pad_to_minimums_aabb,
@@ -129,4 +188,6 @@ export {
     get_aabb_axis,
     hit_aabb,
     get_longest_aabb_axis,
+    translate_aabb,
+    rotate_aabb,
 };

@@ -12,10 +12,10 @@
 - Use custom randomizer to prevent similarity in samples
 
 # Path tracer features to add
-- Textures (from image)
+- Scaling
 - Noise
+- Textures (from image)
 - Height Maps
-- Rotation and Translation (Instancing)
 - Volumes (Fog)
 - PDFs (Light sampling)
 - Import meshes

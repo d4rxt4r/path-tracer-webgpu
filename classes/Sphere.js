@@ -1,9 +1,8 @@
 import * as ti from '../lib/taichi.js';
 
-import { PI } from '../const.js';
 import { new_ray, ray_at } from './Ray.js';
 import { set_face_normal } from './Hittable.js';
-import { get_aabb_points, get_aabb_bbox } from './AABB.js';
+import { get_aabb_points, get_aabb_bbox, translate_aabb, rotate_aabb } from './AABB.js';
 import { interval_surrounds } from './Interval.js';
 import vf from './Vector.js';
 
@@ -13,6 +12,8 @@ import vf from './Vector.js';
  * @property {import('./Vector').vec3} center2
  * @property {number} radius
  * @property {number} mat
+ * @property {import('./Vector.js').vec3} offset
+ * @property {import('./Vector').vec3} rotation
  */
 
 const get_sphere_center = (center, center2, time) => {
@@ -25,24 +26,27 @@ const get_sphere_center = (center, center2, time) => {
     return end_center;
 };
 
+/**
+ * @param {Sphere} sphere
+ */
 const get_sphere_aabb = (sphere) => {
-    const { center, center2, radius } = sphere;
+    const { center, center2, radius, offset, rotation } = sphere;
 
     if (center2 && center2.x + center2.y + center2.z !== 0) {
         const box1 = get_aabb_points(vf.addVal(center, -radius), vf.addVal(center, radius));
         const box2 = get_aabb_points(vf.addVal(center2, -radius), vf.addVal(center2, radius));
-        return get_aabb_bbox(box1, box2);
+        return translate_aabb(rotate_aabb(get_aabb_bbox(box1, box2), rotation), offset);
     }
 
-    return get_aabb_points(vf.addVal(center, -radius), vf.addVal(center, radius));
+    return rotate_aabb(translate_aabb(get_aabb_points(vf.addVal(center, -radius), vf.addVal(center, radius)), offset), rotation);
 };
 
 const get_sphere_uv = (p, rec) => {
     const theta = Math.acos(-p.y);
-    const phi = Math.atan2(-p.z, p.x) + PI;
+    const phi = Math.atan2(-p.z, p.x) + Math.PI;
 
-    rec.u = phi / (2 * PI);
-    rec.v = theta / PI;
+    rec.u = phi / (2 * Math.PI);
+    rec.v = theta / Math.PI;
 };
 
 /**
