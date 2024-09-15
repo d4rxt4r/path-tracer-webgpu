@@ -97,6 +97,18 @@ class VectorFactory {
     max(a, b) {
         return [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.max(a[2], b[2])];
     }
+
+    rotateAxisAngle(v, axis, angle) {
+        const cosTheta = Math.cos(angle);
+        const sinTheta = Math.sin(angle);
+        const dotProduct = this.dot(v, axis);
+
+        const x = axis[0] * dotProduct * (1 - cosTheta) + v[0] * cosTheta + (-axis[2] * v[1] + axis[1] * v[2]) * sinTheta;
+        const y = axis[1] * dotProduct * (1 - cosTheta) + v[1] * cosTheta + (axis[2] * v[0] - axis[0] * v[2]) * sinTheta;
+        const z = axis[2] * dotProduct * (1 - cosTheta) + v[2] * cosTheta + (-axis[1] * v[0] + axis[0] * v[1]) * sinTheta;
+
+        return [x, y, z];
+    }
 }
 
 const random_vec3 = () => {

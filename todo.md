@@ -1,7 +1,6 @@
 # Features to add
 - Add rerender button
 - Loading scene anim
-- More stable and reliable camera movement
 - Render BVH Nodes
 - Objects editor
 

@@ -1,9 +1,15 @@
 import * as ti from '../lib/taichi.js';
 
-import { MAX_F32 } from '../const.js';
 import { degrees_to_radians } from './Math.js';
 
 import { Interval, get_interval, get_interval_int, interval_size, interval_expand } from './Interval.js';
+
+/**
+ * @typedef TAABB
+ * @property {import('./Interval.js').Interval} x
+ * @property {import('./Interval.js').Interval} y
+ * @property {import('./Interval.js').Interval} z
+ */
 
 const AABB = ti.types.struct({
     x: Interval,
@@ -12,6 +18,10 @@ const AABB = ti.types.struct({
 });
 
 const delta = 0.0001;
+/**
+ * @param {TAABB} aabb
+ * @returns {TAABB}
+ */
 const pad_to_minimums_aabb = (aabb) => {
     aabb.x = interval_expand(aabb.x, delta);
     aabb.y = interval_expand(aabb.y, delta);
@@ -19,10 +29,19 @@ const pad_to_minimums_aabb = (aabb) => {
     return aabb;
 };
 
+/**
+ * @returns {TAABB}
+ */
 const get_aabb = () => {
     return get_aabb_int(get_interval(), get_interval(), get_interval());
 };
 
+/**
+ * @param {import('./Interval.js').Interval} x
+ * @param {import('./Interval.js').Interval} y
+ * @param {import('./Interval.js').Interval} z
+ * @returns {TAABB}
+ */
 const get_aabb_int = (x, y, z) => {
     return pad_to_minimums_aabb({
         x,
@@ -31,14 +50,24 @@ const get_aabb_int = (x, y, z) => {
     });
 };
 
+/**
+ * @param {import('./Vector.js').vec3} a
+ * @param {import('./Vector.js').vec3} b
+ * @returns {TAABB}
+ */
 const get_aabb_points = (a, b) => {
     return pad_to_minimums_aabb({
-        x: a[0] <= b[0] ? { min: a[0], max: b[0] } : { min: b[0], max: a[0] },
-        y: a[1] <= b[1] ? { min: a[1], max: b[1] } : { min: b[1], max: a[1] },
-        z: a[2] <= b[2] ? { min: a[2], max: b[2] } : { min: b[2], max: a[2] },
+        x: { min: Math.min(a[0], b[0]), max: Math.max(a[0], b[0]) },
+        y: { min: Math.min(a[1], b[1]), max: Math.max(a[1], b[1]) },
+        z: { min: Math.min(a[2], b[2]), max: Math.max(a[2], b[2]) },
     });
 };
 
+/**
+ * @param {TAABB} box1
+ * @param {TAABB} box2
+ * @returns {TAABB}
+ */
 const get_aabb_bbox = (box1, box2) => {
     return pad_to_minimums_aabb({
         x: get_interval_int(box1.x, box2.x),
@@ -47,10 +76,18 @@ const get_aabb_bbox = (box1, box2) => {
     });
 };
 
+/**
+ * @param {TAABB} aabb
+ * @returns {import('./Vector.js').vec3}
+ */
 const get_aabb_centroid = (aabb) => {
     return [(aabb.x.min + aabb.x.max) / 2, (aabb.y.min + aabb.y.max) / 2, (aabb.z.min + aabb.z.max) / 2];
 };
 
+/**
+ * @param {TAABB} aabb
+ * @returns {import('./Interval.js').Interval}
+ */
 const get_aabb_axis = (aabb, n) => {
     let res = aabb.x;
 
@@ -60,6 +97,10 @@ const get_aabb_axis = (aabb, n) => {
     return res;
 };
 
+/**
+ * @param {TAABB} aabb
+ * @returns {number}
+ */
 const get_longest_aabb_axis = (aabb) => {
     let res = 0;
 
