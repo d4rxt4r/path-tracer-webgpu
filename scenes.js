@@ -16,12 +16,7 @@ const Scene_1 = {
             radius: 100.0,
             mat: 0,
         },
-        {
-            type: OBJ_TYPE.SPHERE,
-            center: [0.0, 0, -1.2],
-            radius: 0.5,
-            mat: 1,
-        },
+        ...get_box_q([0, 0, 0], [0.5, 0.5, 0.5], 4, [-0.3, 0.3, -1.0], [20, 20, 20]),
         {
             type: OBJ_TYPE.SPHERE,
             center: [-1.0, 0, -1.0],
@@ -38,7 +33,7 @@ const Scene_1 = {
             type: OBJ_TYPE.SPHERE,
             center: [1.0, 0.0, -1.0],
             radius: 0.5,
-            mat: 4,
+            mat: 1,
         },
         {
             type: OBJ_TYPE.QUAD,
@@ -73,7 +68,7 @@ const Scene_1 = {
         {
             type: MAT_TYPE.METAL,
             attenuation: [0.8, 0.9, 0.8],
-            k: 0.2,
+            k: 0.01,
         },
         {
             type: MAT_TYPE.LIGHT,
@@ -444,8 +439,8 @@ const Scene_5 = {
             v: [0, 0, -105],
             mat: 3,
         },
-        ...get_box_q([0, 0, 0], [165, 330, 165], 1, [265, 0, 295], [0, 15, 0]),
-        ...get_box_q([0, 0, 0], [165, 165, 165], 1, [130, 0, 65], [0, -18, 0]),
+        ...get_box_q([0, 0, 0], [165, 330, 165], 1, [265, 0, 295], [20, 90, 20]),
+        // ...get_box_q([0, 0, 0], [165, 165, 165], 1, [130, 0, 65], [0, -18, 0]),
     ],
     materials: [
         {

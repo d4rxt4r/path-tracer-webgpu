@@ -158,9 +158,9 @@ const near_zero_vec3 = (vec) => {
 };
 
 const get_rotation_matrix = (rotation) => {
-    const rad_x = degrees_to_radians(-rotation.x);
-    const rad_y = degrees_to_radians(-rotation.y);
-    const rad_z = degrees_to_radians(-rotation.z);
+    const rad_x = degrees_to_radians(rotation.x);
+    const rad_y = degrees_to_radians(rotation.y);
+    const rad_z = degrees_to_radians(rotation.z);
 
     const cos_x = Math.cos(rad_x);
     const sin_x = Math.sin(rad_x);
@@ -168,11 +168,11 @@ const get_rotation_matrix = (rotation) => {
     const sin_y = Math.sin(rad_y);
     const cos_z = Math.cos(rad_z);
     const sin_z = Math.sin(rad_z);
-    // Combine rotation matrices
+
     const rot_mat = [
-        [cos_z * cos_y, -sin_z, sin_y],
-        [sin_z, cos_z * cos_x, -sin_x],
-        [-sin_y, sin_x, cos_y * cos_x],
+        [cos_y * cos_z, cos_y * sin_z, -sin_y],
+        [sin_x * sin_y * cos_z - cos_x * sin_z, sin_x * sin_y * sin_z + cos_x * cos_z, sin_x * cos_y],
+        [cos_x * sin_y * cos_z + sin_x * sin_z, cos_x * sin_y * sin_z - sin_x * cos_z, cos_x * cos_y],
     ];
 
     return rot_mat;

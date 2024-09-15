@@ -24,6 +24,7 @@ const get_quad_bbox = (quad) => {
 
     const bbox_diagonal1 = get_aabb_points(Q, vf.add(vf.add(Q, u), v));
     const bbox_diagonal2 = get_aabb_points(vf.add(Q, u), vf.add(Q, v));
+
     return translate_aabb(rotate_aabb(get_aabb_bbox(bbox_diagonal1, bbox_diagonal2), quad.rotation), quad.offset);
 };
 
@@ -75,6 +76,7 @@ const quad_is_interior = (a, b, rec) => {
 
     return res;
 };
+
 const hit_quad = (quad, r, ray_t, rec) => {
     const normal = get_quad_normal(quad.u, quad.v);
     const D = get_quad_d(quad.Q, normal);
@@ -120,9 +122,6 @@ const hit_quad = (quad, r, ray_t, rec) => {
 };
 
 const get_box_q = (a, b, mat, offset = [0, 0, 0], rotation = [0, 0, 0]) => {
-    const sides = [];
-
-    // Construct the two opposite vertices with the minimum and maximum coordinates.
     const min = vf.min(a, b);
     const max = vf.max(a, b);
 
@@ -130,14 +129,17 @@ const get_box_q = (a, b, mat, offset = [0, 0, 0], rotation = [0, 0, 0]) => {
     const dy = [0, max[1] - min[1], 0];
     const dz = [0, 0, max[2] - min[2]];
 
-    sides.push({ type: OBJ_TYPE.QUAD, Q: [min[0], min[1], max[2]], u: dx, v: dy, mat, offset, rotation }); // front
-    sides.push({ type: OBJ_TYPE.QUAD, Q: [max[0], min[1], max[2]], u: vf.scale(dz, -1), v: dy, mat, offset, rotation }); // right
-    sides.push({ type: OBJ_TYPE.QUAD, Q: [max[0], min[1], min[2]], u: vf.scale(dx, -1), v: dy, mat, offset, rotation }); // back
-    sides.push({ type: OBJ_TYPE.QUAD, Q: [min[0], min[1], min[2]], u: dz, v: dy, mat, offset, rotation }); // left
-    sides.push({ type: OBJ_TYPE.QUAD, Q: [min[0], max[1], max[2]], u: dx, v: vf.scale(dz, -1), mat, offset, rotation }); // top
-    sides.push({ type: OBJ_TYPE.QUAD, Q: [min[0], min[1], min[2]], u: dx, v: dz, mat, offset, rotation }); // bottom
+    const negDx = vf.scale(dx, -1);
+    const negDz = vf.scale(dz, -1);
 
-    return sides;
+    return [
+        { type: OBJ_TYPE.QUAD, Q: [min[0], min[1], max[2]], u: dx, v: dy, mat, offset, rotation }, // front
+        { type: OBJ_TYPE.QUAD, Q: [max[0], min[1], max[2]], u: negDz, v: dy, mat, offset, rotation }, // right
+        { type: OBJ_TYPE.QUAD, Q: [max[0], min[1], min[2]], u: negDx, v: dy, mat, offset, rotation }, // back
+        { type: OBJ_TYPE.QUAD, Q: [min[0], min[1], min[2]], u: dz, v: dy, mat, offset, rotation }, // left
+        { type: OBJ_TYPE.QUAD, Q: [min[0], max[1], max[2]], u: dx, v: negDz, mat, offset, rotation }, // top
+        { type: OBJ_TYPE.QUAD, Q: [min[0], min[1], min[2]], u: dx, v: dz, mat, offset, rotation }, // bottom
+    ];
 };
 
 export { get_quad_bbox, get_quad_normal, get_quad_d, get_quad_w, quad_is_interior, hit_quad, get_box_q };

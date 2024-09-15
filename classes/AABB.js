@@ -141,18 +141,18 @@ const rotate_aabb = (aabb, rotation) => {
         const sin_theta = Math.sin(radians);
         const cos_theta = Math.cos(radians);
 
-        for (let i = 0; i < 2; i++) {
-            for (let j = 0; j < 2; j++) {
-                for (let k = 0; k < 2; k++) {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                for (let k = 0; k < 3; k++) {
                     const x = i * aabb.x.max + (1 - i) * aabb.x.min;
                     const y = j * aabb.y.max + (1 - j) * aabb.y.min;
                     const z = k * aabb.z.max + (1 - k) * aabb.z.min;
 
                     let tester;
                     if (r === 0) {
-                        const newx = cos_theta * x - sin_theta * y;
-                        const newz = sin_theta * x + cos_theta * y;
-                        tester = [x, newx, newz];
+                        const newy = cos_theta * y - sin_theta * z;
+                        const newz = sin_theta * y + cos_theta * z;
+                        tester = [x, newy, newz];
                     }
                     if (r === 1) {
                         const newx = cos_theta * x + sin_theta * z;
@@ -160,8 +160,8 @@ const rotate_aabb = (aabb, rotation) => {
                         tester = [newx, y, newz];
                     }
                     if (r === 2) {
-                        const newx = cos_theta * y - sin_theta * z;
-                        const newy = sin_theta * y + cos_theta * z;
+                        const newx = cos_theta * x - sin_theta * y;
+                        const newy = sin_theta * x + cos_theta * y;
                         tester = [newx, newy, z];
                     }
 

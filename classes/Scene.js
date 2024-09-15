@@ -52,12 +52,11 @@ const hit_object = (obj, r, ray_t, rec) => {
     const has_rotation = ti.sum(obj.rotation) !== 0;
 
     let ray = r;
-
-    if (has_rotation) {
-        ray = rotate_ray(r, obj.rotation);
-    }
     if (has_offset) {
-        ray = translate_ray(r, obj.offset);
+        ray = translate_ray(ray, obj.offset);
+    }
+    if (has_rotation) {
+        ray = rotate_ray(ray, obj.rotation);
     }
 
     if (obj.type === OBJ_TYPE.SPHERE) {
@@ -72,9 +71,9 @@ const hit_object = (obj, r, ray_t, rec) => {
             rec.p += obj.offset;
         }
         if (has_rotation) {
-            const rot_mat = get_rotation_matrix(-obj.rotation);
-            rec.p = ti.matmul(rot_mat, rec.p);
-            rec.normal = ti.matmul(rot_mat, rec.normal);
+            const rot_mat = get_rotation_matrix(obj.rotation);
+            rec.normal = ti.matmul(ti.transpose(rot_mat), rec.normal);
+            rec.p = ti.matmul(ti.transpose(rot_mat), rec.p);
         }
     }
 

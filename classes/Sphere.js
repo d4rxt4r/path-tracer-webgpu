@@ -38,7 +38,7 @@ const get_sphere_aabb = (sphere) => {
         return translate_aabb(rotate_aabb(get_aabb_bbox(box1, box2), rotation), offset);
     }
 
-    return rotate_aabb(translate_aabb(get_aabb_points(vf.addVal(center, -radius), vf.addVal(center, radius)), offset), rotation);
+    return translate_aabb(rotate_aabb(get_aabb_points(vf.addVal(center, -radius), vf.addVal(center, radius)), rotation), offset);
 };
 
 const get_sphere_uv = (p, rec) => {

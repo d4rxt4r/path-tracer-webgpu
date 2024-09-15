@@ -120,8 +120,7 @@ const ray_color = (r, background_color, max_depth) => {
  * @return {Ray}
  */
 const translate_ray = (r, offset) => {
-    const offset_r = new_ray(r.origin - offset, r.direction, r.time);
-    return offset_r;
+    return new_ray(r.origin - offset, r.direction, r.time);
 };
 
 /**
@@ -131,12 +130,7 @@ const translate_ray = (r, offset) => {
  */
 const rotate_ray = (r, rotation) => {
     const rot_mat = get_rotation_matrix(rotation);
-
-    const origin = ti.matmul(rot_mat, r.origin);
-    const direction = ti.matmul(rot_mat, r.direction);
-
-    const rotated_r = new_ray(origin, direction, r.time);
-    return rotated_r;
+    return new_ray(ti.matmul(rot_mat, r.origin), ti.matmul(rot_mat, r.direction), r.time);
 };
 
 export { new_ray, get_ray, sample_square, defocus_disk_sample, ray_at, ray_color, translate_ray, rotate_ray };
