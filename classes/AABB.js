@@ -133,46 +133,57 @@ const rotate_aabb = (aabb, rotation) => {
         return aabb;
     }
 
-    const min = [MAX_F32, MAX_F32, MAX_F32];
-    const max = [-MAX_F32, -MAX_F32, -MAX_F32];
+    const corners = [
+        [aabb.x.min, aabb.y.min, aabb.z.min],
+        [aabb.x.min, aabb.y.min, aabb.z.max],
+        [aabb.x.min, aabb.y.max, aabb.z.min],
+        [aabb.x.min, aabb.y.max, aabb.z.max],
+        [aabb.x.max, aabb.y.min, aabb.z.min],
+        [aabb.x.max, aabb.y.min, aabb.z.max],
+        [aabb.x.max, aabb.y.max, aabb.z.min],
+        [aabb.x.max, aabb.y.max, aabb.z.max],
+    ];
 
-    for (let r = 0; r < 3; r++) {
-        const radians = degrees_to_radians(rotation[r]);
-        const sin_theta = Math.sin(radians);
-        const cos_theta = Math.cos(radians);
+    const rotated_corners = corners.map((corner) => {
+        let [x, y, z] = corner;
 
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                for (let k = 0; k < 3; k++) {
-                    const x = i * aabb.x.max + (1 - i) * aabb.x.min;
-                    const y = j * aabb.y.max + (1 - j) * aabb.y.min;
-                    const z = k * aabb.z.max + (1 - k) * aabb.z.min;
+        for (let r = 0; r < 3; r++) {
+            const radians = degrees_to_radians(rotation[r]);
+            const sin_theta = Math.sin(radians);
+            const cos_theta = Math.cos(radians);
 
-                    let tester;
-                    if (r === 0) {
-                        const newy = cos_theta * y - sin_theta * z;
-                        const newz = sin_theta * y + cos_theta * z;
-                        tester = [x, newy, newz];
-                    }
-                    if (r === 1) {
-                        const newx = cos_theta * x + sin_theta * z;
-                        const newz = -sin_theta * x + cos_theta * z;
-                        tester = [newx, y, newz];
-                    }
-                    if (r === 2) {
-                        const newx = cos_theta * x - sin_theta * y;
-                        const newy = sin_theta * x + cos_theta * y;
-                        tester = [newx, newy, z];
-                    }
-
-                    for (let c = 0; c < 3; c++) {
-                        min[c] = Math.min(min[c], tester[c]);
-                        max[c] = Math.max(max[c], tester[c]);
-                    }
-                }
+            if (r === 0) {
+                const newy = cos_theta * y - sin_theta * z;
+                const newz = sin_theta * y + cos_theta * z;
+                y = newy;
+                z = newz;
+            } else if (r === 1) {
+                const newx = cos_theta * x + sin_theta * z;
+                const newz = -sin_theta * x + cos_theta * z;
+                x = newx;
+                z = newz;
+            } else if (r === 2) {
+                const newx = cos_theta * x - sin_theta * y;
+                const newy = sin_theta * x + cos_theta * y;
+                x = newx;
+                y = newy;
             }
         }
-    }
+
+        return [x, y, z];
+    });
+
+    const min = [
+        Math.min(...rotated_corners.map((c) => c[0])),
+        Math.min(...rotated_corners.map((c) => c[1])),
+        Math.min(...rotated_corners.map((c) => c[2])),
+    ];
+
+    const max = [
+        Math.max(...rotated_corners.map((c) => c[0])),
+        Math.max(...rotated_corners.map((c) => c[1])),
+        Math.max(...rotated_corners.map((c) => c[2])),
+    ];
 
     return get_aabb_points(min, max);
 };

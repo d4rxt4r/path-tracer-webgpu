@@ -67,13 +67,15 @@ const hit_object = (obj, r, ray_t, rec) => {
     }
 
     if (res) {
-        if (has_offset) {
-            rec.p += obj.offset;
-        }
         if (has_rotation) {
             const rot_mat = get_rotation_matrix(obj.rotation);
+
             rec.normal = ti.matmul(ti.transpose(rot_mat), rec.normal);
             rec.p = ti.matmul(ti.transpose(rot_mat), rec.p);
+        }
+
+        if (has_offset) {
+            rec.p += obj.offset;
         }
     }
 
