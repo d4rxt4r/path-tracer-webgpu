@@ -1,5 +1,7 @@
 import { OBJ_TYPE, MAT_TYPE, TEX_TYPE } from './const.js';
 import { random_f32 } from './classes/Math.js';
+import { get_box_q } from './classes/Quad.js';
+
 import vf from './classes/Vector.js';
 
 /**
@@ -14,15 +16,10 @@ const Scene_1 = {
             radius: 100.0,
             mat: 0,
         },
+        ...get_box_q([0, 0, 0], [0.5, 0.5, 0.5], 4, [-0.3, 0.3, -1.0], [45, 45, 45]),
         {
             type: OBJ_TYPE.SPHERE,
-            center: [0.0, 0.0, -1.2],
-            radius: 0.5,
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.SPHERE,
-            center: [-1.0, 0.0, -1.0],
+            center: [-1.0, 0, -1.0],
             radius: 0.5,
             mat: 2,
         },
@@ -36,12 +33,13 @@ const Scene_1 = {
             type: OBJ_TYPE.SPHERE,
             center: [1.0, 0.0, -1.0],
             radius: 0.5,
-            mat: 4,
+            mat: 1,
         },
         {
-            type: OBJ_TYPE.SPHERE,
-            center: [-1.0, 1.2, 0],
-            radius: 0.3,
+            type: OBJ_TYPE.QUAD,
+            Q: [-1.0, 2.0, -2.0],
+            u: [2.0, 0.0, 0.0],
+            v: [0.0, 0.0, 2.0],
             mat: 5,
         },
     ],
@@ -70,7 +68,7 @@ const Scene_1 = {
         {
             type: MAT_TYPE.METAL,
             attenuation: [0.8, 0.9, 0.8],
-            k: 0.2,
+            k: 0.01,
         },
         {
             type: MAT_TYPE.LIGHT,
@@ -98,7 +96,7 @@ const Scene_1 = {
         cam_z: 2,
         at_x: 0.0,
         at_y: 0.0,
-        at_z: -1.0,
+        at_z: -2.0,
     },
 };
 
@@ -252,7 +250,7 @@ for (let a = -11; a < 11; a++) {
  * @type {import("./classes/Scene.js").Scene}
  */
 const Scene_3 = {
-    name: 'Perlin Noise',
+    name: 'Perlin Noise (WIP)',
     objects: [
         {
             type: OBJ_TYPE.SPHERE,
@@ -396,7 +394,98 @@ const Scene_4 = {
     },
 };
 
-const SCENE_LIST = [Scene_1, Scene_2, Scene_3, Scene_4];
+const Scene_5 = {
+    name: 'Cornell Box',
+    objects: [
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [555, 0, 0],
+            u: [0, 555, 0],
+            v: [0, 0, 555],
+            mat: 2,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [0, 0, 0],
+            u: [0, 555, 0],
+            v: [0, 0, 555],
+            mat: 0,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [0, 0, 0],
+            u: [555, 0, 0],
+            v: [0, 0, 555],
+            mat: 1,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [555, 555, 555],
+            u: [-555, 0, 0],
+            v: [0, 0, -555],
+            mat: 1,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [0, 0, 555],
+            u: [555, 0, 0],
+            v: [0, 555, 0],
+            mat: 1,
+        },
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [343, 554, 332],
+            u: [-130, 0, 0],
+            v: [0, 0, -105],
+            mat: 3,
+        },
+        ...get_box_q([0, 0, 0], [165, 330, 165], 1, [265, 0, 295], [0, 15, 0]),
+        ...get_box_q([0, 0, 0], [165, 165, 165], 1, [130, 0, 65], [0, -18, 0]),
+    ],
+    materials: [
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [0.65, 0.05, 0.05],
+        },
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [0.73, 0.73, 0.73],
+        },
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [0.12, 0.45, 0.15],
+        },
+        {
+            type: MAT_TYPE.LIGHT,
+            attenuation: [1.0, 1.0, 1.0],
+            k: 15.0,
+        },
+        {
+            type: MAT_TYPE.DIELECTRIC,
+            attenuation: [1, 1, 1],
+            k: 1.5,
+        },
+        {
+            type: MAT_TYPE.METAL,
+            attenuation: [0.8, 0.85, 0.88],
+            k: 0.0,
+        },
+    ],
+    camera: {
+        scene: 4,
+        background: [0, 0, 0],
+        spp: 200,
+        vfov: 40,
+        cam_x: 278,
+        cam_y: 278,
+        cam_z: -800,
+        at_x: 278.0,
+        at_y: 278.0,
+        at_z: 0.0,
+    },
+};
+
+const SCENE_LIST = [Scene_1, Scene_2, Scene_3, Scene_4, Scene_5];
 const SCENE_SELECT = Object.fromEntries(SCENE_LIST.map((scene, key) => [scene.name, key]));
 
 export { SCENE_LIST, SCENE_SELECT };

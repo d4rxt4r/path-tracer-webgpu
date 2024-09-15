@@ -1,6 +1,6 @@
 import * as ti from '../lib/taichi.js';
 
-import { degrees_to_radians, round, throttle } from './Math.js';
+import { degrees_to_radians, round } from './Math.js';
 import { hex2rgb } from './Color.js';
 
 import vf from './Vector.js';
@@ -140,10 +140,11 @@ const get_camera_settings = (settings, image_width, image_height) => {
 };
 
 function init_camera_movement(canvas, controllers, get_values) {
-    let camera_moving = false;
+    let is_moving = false;
+    let is_rotating = false;
 
-    function move_camera_at(event) {
-        if (!camera_moving) {
+    function pan_camera(event) {
+        if (!is_moving) {
             return;
         }
 
@@ -152,8 +153,22 @@ function init_camera_movement(canvas, controllers, get_values) {
         const x_diff = event.pageX - prev_mouse_pos.x;
         const y_diff = event.pageY - prev_mouse_pos.y;
 
-        controllers.at_x.setValue(round(controllers.at_x.getValue() - x_diff / 200));
-        controllers.at_y.setValue(round(controllers.at_y.getValue() + y_diff / 200));
+        const vals = get_values();
+        const forward_vec = vf.normalized(vf.sub([vals.at_x, vals.at_y, vals.at_z], [vals.cam_x, vals.cam_y, vals.cam_z]));
+        const right_vec = vf.normalized(vf.cross(forward_vec, [0, 1, 0]));
+        const up_vec = vf.cross(right_vec, forward_vec);
+
+        const pan_speed = 0.01;
+        const pan_x = vf.scale(right_vec, -x_diff * pan_speed);
+        const pan_y = vf.scale(up_vec, y_diff * pan_speed);
+        const pan_vec = vf.add(pan_x, pan_y);
+
+        controllers.cam_x.setValue(round(vals.cam_x + pan_vec[0]));
+        controllers.cam_y.setValue(round(vals.cam_y + pan_vec[1]));
+        controllers.cam_z.setValue(round(vals.cam_z + pan_vec[2]));
+        controllers.at_x.setValue(round(vals.at_x + pan_vec[0]));
+        controllers.at_y.setValue(round(vals.at_y + pan_vec[1]));
+        controllers.at_z.setValue(round(vals.at_z + pan_vec[2]));
 
         prev_mouse_pos.x = event.pageX;
         prev_mouse_pos.y = event.pageY;
@@ -194,8 +209,37 @@ function init_camera_movement(canvas, controllers, get_values) {
         }
     }
 
-    const throttledMove = throttle(move_camera, 60);
-    const throttledMoveAt = throttle(move_camera_at, 60);
+    function rotate_camera(event) {
+        if (!is_rotating) {
+            return;
+        }
+
+        event.stopPropagation();
+
+        const x_diff = event.pageX - prev_mouse_pos.x;
+        const y_diff = event.pageY - prev_mouse_pos.y;
+
+        const vals = get_values();
+        const camera_pos = [vals.cam_x, vals.cam_y, vals.cam_z];
+        const look_at = [vals.at_x, vals.at_y, vals.at_z];
+
+        // Rotate around Y-axis (left/right)
+        const rotation_speed = 0.003;
+        const rotation_y = vf.rotateAxisAngle(vf.sub(look_at, camera_pos), [0, 1, 0], -x_diff * rotation_speed);
+
+        // Rotate around local X-axis (up/down)
+        const right_vec = vf.normalized(vf.cross(rotation_y, [0, 1, 0]));
+        const rotation_x = vf.rotateAxisAngle(rotation_y, right_vec, -y_diff * rotation_speed);
+
+        const new_look_at = vf.add(camera_pos, rotation_x);
+
+        controllers.at_x.setValue(round(new_look_at[0]));
+        controllers.at_y.setValue(round(new_look_at[1]));
+        controllers.at_z.setValue(round(new_look_at[2]));
+
+        prev_mouse_pos.x = event.pageX;
+        prev_mouse_pos.y = event.pageY;
+    }
 
     const prev_mouse_pos = {
         x: 0,
@@ -205,15 +249,26 @@ function init_camera_movement(canvas, controllers, get_values) {
     canvas.addEventListener('mousedown', (event) => {
         prev_mouse_pos.x = event.pageX;
         prev_mouse_pos.y = event.pageY;
-        camera_moving = true;
+        is_moving = true;
+        is_rotating = event.button === 2; // Right click
     });
     canvas.addEventListener('mouseup', () => {
-        camera_moving = false;
+        is_moving = false;
+        is_rotating = false;
+    });
+    canvas.addEventListener('contextmenu', (event) => {
+        // Prevent the context menu from appearing
+        event.preventDefault();
+    });
+    canvas.addEventListener('mousemove', (event) => {
+        if (is_rotating) {
+            rotate_camera(event);
+        } else {
+            pan_camera(event);
+        }
     });
 
-    canvas.addEventListener('mousemove', throttledMoveAt);
-
-    window.addEventListener('keydown', throttledMove);
+    window.addEventListener('keydown', move_camera);
 }
 
 export { CameraSetting, CameraSettingCPU, initialize_camera, get_camera_settings, init_camera_movement };

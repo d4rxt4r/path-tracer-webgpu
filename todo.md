@@ -1,8 +1,8 @@
 # Features to add
 - Add rerender button
 - Loading scene anim
-- More stable and reliable camera movement
 - Render BVH Nodes
+- Objects editor
 
 # Optimizations to made
 - Refactor computational functions
@@ -11,10 +11,10 @@
 - Use custom randomizer to prevent similarity in samples
 
 # Path tracer features to add
-- Textures (from image)
+- Scaling
 - Noise
+- Textures (from image)
 - Height Maps
-- Rotation and Translation (Instancing)
 - Volumes (Fog)
 - PDFs (Light sampling)
 - Import meshes

@@ -1,7 +1,7 @@
 import * as ti from '../lib/taichi.js';
 
 import { EPS } from '../const.js';
-import { random_f32 } from './Math.js';
+import { random_f32, degrees_to_radians } from './Math.js';
 
 /**
  * @typedef vec3
@@ -97,6 +97,18 @@ class VectorFactory {
     max(a, b) {
         return [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.max(a[2], b[2])];
     }
+
+    rotateAxisAngle(v, axis, angle) {
+        const cosTheta = Math.cos(angle);
+        const sinTheta = Math.sin(angle);
+        const dotProduct = this.dot(v, axis);
+
+        const x = axis[0] * dotProduct * (1 - cosTheta) + v[0] * cosTheta + (-axis[2] * v[1] + axis[1] * v[2]) * sinTheta;
+        const y = axis[1] * dotProduct * (1 - cosTheta) + v[1] * cosTheta + (axis[2] * v[0] - axis[0] * v[2]) * sinTheta;
+        const z = axis[2] * dotProduct * (1 - cosTheta) + v[2] * cosTheta + (-axis[1] * v[0] + axis[0] * v[1]) * sinTheta;
+
+        return [x, y, z];
+    }
 }
 
 const random_vec3 = () => {
@@ -157,6 +169,27 @@ const near_zero_vec3 = (vec) => {
     return ti.abs(vec.x) < EPS && ti.abs(vec.y) < EPS && ti.abs(vec.z) < EPS;
 };
 
+const get_rotation_matrix = (rotation) => {
+    const rad_x = degrees_to_radians(rotation.x);
+    const rad_y = degrees_to_radians(rotation.y);
+    const rad_z = degrees_to_radians(rotation.z);
+
+    const cos_x = Math.cos(rad_x);
+    const sin_x = Math.sin(rad_x);
+    const cos_y = Math.cos(rad_y);
+    const sin_y = Math.sin(rad_y);
+    const cos_z = Math.cos(rad_z);
+    const sin_z = Math.sin(rad_z);
+
+    const rot_mat = [
+        [cos_y * cos_z, cos_y * sin_z, -sin_y],
+        [sin_x * sin_y * cos_z - cos_x * sin_z, sin_x * sin_y * sin_z + cos_x * cos_z, sin_x * cos_y],
+        [cos_x * sin_y * cos_z + sin_x * sin_z, cos_x * sin_y * sin_z - sin_x * cos_z, cos_x * cos_y],
+    ];
+
+    return rot_mat;
+};
+
 export {
     random_f32,
     random_vec3,
@@ -168,6 +201,7 @@ export {
     near_zero_vec3,
     reflect_vec3,
     refract_vec3,
+    get_rotation_matrix,
 };
 
 const vf = new VectorFactory();

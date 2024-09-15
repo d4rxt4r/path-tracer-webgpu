@@ -3,7 +3,8 @@ import * as ti from '../lib/taichi.js';
 /**
  * @typedef HitRecord
  * @property {import("./Vector.js").vec3} p
- * @property {import("./Vector.js").vec3} normal
+ * @property {import("./Vector.js").vec3} rotation
+ * @property {import("./Vector.js").vec3} rot
  * @property {number} mat
  * @property {number} t
  * @property {boolean} front_face
@@ -13,11 +14,17 @@ import * as ti from '../lib/taichi.js';
 
 const new_hit_record = () => {
     return {
+        // position
         p: [0.0, 0.0, 0.0],
+        // normal
         normal: [0.0, 0.0, 0.0],
+        // time
         t: 0.0,
+        // front face
         front_face: true,
+        // material
         mat: -1,
+        // texture coordinates
         u: [0.0, 0.0, 0.0],
         v: [0.0, 0.0, 0.0],
     };
@@ -55,6 +62,11 @@ const set_face_normal = (rec, r, outward_normal) => {
 
 const Hittable = ti.types.struct({
     type: ti.i32,
+    // offset
+    offset: ti.types.vector(ti.f32, 3),
+    // rotation
+    rotation: ti.types.vector(ti.i32, 3),
+    // material
     mat: ti.i32,
     // quad
     Q: ti.types.vector(ti.f32, 3),

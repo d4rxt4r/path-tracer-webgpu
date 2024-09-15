@@ -21,6 +21,7 @@ const hex2rgb = (hex) => {
 
 const process_color = (color) => {
     const intensity = get_interval(0.0, 0.999);
+
     const r = linear_to_gamma(color.r);
     const g = linear_to_gamma(color.g);
     const b = linear_to_gamma(color.b);

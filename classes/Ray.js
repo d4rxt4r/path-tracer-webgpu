@@ -4,7 +4,7 @@ import { new_hit_record } from './Hittable.js';
 import { hit_scene } from './Scene.js';
 import { MAX_F32 } from '../const.js';
 import { material_scatter, emitted_light } from './Material.js';
-import { random_in_unit_disk_vec3 } from './Vector.js';
+import { random_in_unit_disk_vec3, get_rotation_matrix } from './Vector.js';
 import { get_interval } from './Interval.js';
 
 /**
@@ -14,6 +14,12 @@ import { get_interval } from './Interval.js';
  * @property {number} time
  */
 
+/**
+ * @param {import('./Vector').vec3} origin
+ * @param {import('./Vector').vec3} direction
+ * @param {number} time
+ * @return {Ray}
+ */
 const new_ray = (origin, direction, time = 0) => {
     return {
         origin,
@@ -25,6 +31,7 @@ const new_ray = (origin, direction, time = 0) => {
 /**
  * @param {Ray} ray
  * @param {number} t
+ * @return {import('./Vector').vec3}
  */
 const ray_at = (ray, t) => {
     return ray.origin + t * ray.direction;
@@ -32,6 +39,7 @@ const ray_at = (ray, t) => {
 
 /**
  * Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
+ * @return {import('./Vector').vec3}
  */
 const sample_square = () => {
     return [ti.random() - 0.5, ti.random() - 0.5];
@@ -40,6 +48,7 @@ const sample_square = () => {
 /**
  * Returns a random point in the camera defocus disk.
  * @param {import('./Camera.js').CameraSetting} camera_settings
+ * @return {import('./Vector').vec3}
  */
 const defocus_disk_sample = (camera_settings) => {
     const p = random_in_unit_disk_vec3();
@@ -51,6 +60,7 @@ const defocus_disk_sample = (camera_settings) => {
  * @param {number} i
  * @param {number} j
  * @param {import('./Camera.js').CameraSetting} camera_settings
+ * @return {Ray}
  */
 const get_ray = (i, j, camera_settings) => {
     const offset = sample_square();
@@ -104,4 +114,23 @@ const ray_color = (r, background_color, max_depth) => {
     return final_color;
 };
 
-export { new_ray, get_ray, sample_square, defocus_disk_sample, ray_at, ray_color };
+/**
+ * @param {Ray} r
+ * @param {import('./Vector').vec3} offset
+ * @return {Ray}
+ */
+const translate_ray = (r, offset) => {
+    return new_ray(r.origin - offset, r.direction, r.time);
+};
+
+/**
+ * @param {Ray} r
+ * @param {import('./Vector').vec3} rotation
+ * @return {Ray}
+ */
+const rotate_ray = (r, rotation) => {
+    const rot_mat = get_rotation_matrix(rotation);
+    return new_ray(ti.matmul(rot_mat, r.origin), ti.matmul(rot_mat, r.direction), r.time);
+};
+
+export { new_ray, get_ray, sample_square, defocus_disk_sample, ray_at, ray_color, translate_ray, rotate_ray };
