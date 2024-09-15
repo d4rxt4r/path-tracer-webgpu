@@ -39,7 +39,7 @@ const default_settings = {
 };
 
 const create_gui = (user_settings = {}) => {
-    // eslint-disable-next-line no-undef
+    /* global lil */
     const gui = new lil.GUI();
 
     const settings = {

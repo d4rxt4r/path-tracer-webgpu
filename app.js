@@ -57,6 +57,10 @@ const Scene = ti.field(Hittable, 1000);
 const Materials = ti.field(Material, 1000);
 const Textures = ti.field(Texture, 100);
 
+/* global Stats */
+const stats = new Stats();
+document.body.appendChild(stats.dom);
+
 const main = async () => {
     await ti.init();
 
@@ -173,10 +177,15 @@ const main = async () => {
     async function fast_pass() {
         const camera_settings = get_camera_settings(gui.get_values(), image_width, image_height);
         clear_color_buffer();
+
+        stats.begin();
+
         render(camera_settings);
         total_samples = 1;
         tone_map(total_samples);
         canvas.setImage(pixelsBuffer);
+
+        stats.end();
     }
 
     async function full_pass() {
@@ -185,10 +194,14 @@ const main = async () => {
         const camera_settings = get_camera_settings(gui_values, image_width, image_height);
 
         if (total_samples < spp) {
+            stats.begin();
+
             render(camera_settings);
             total_samples += 1;
             tone_map(total_samples);
             canvas.setImage(pixelsBuffer);
+
+            stats.end();
 
             frame_id = requestAnimationFrame(full_pass);
         }
