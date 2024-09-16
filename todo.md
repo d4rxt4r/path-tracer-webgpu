@@ -11,7 +11,6 @@
 - Use native bindings and write compute shaders instead of using [taichi.js](https://taichi-js.com/docs/docs/basics/getting-started)
 
 # Path tracer features to add
-- PDFs (Light sampling)
 - Noise
 - Volumes (Fog)
 - Scaling
