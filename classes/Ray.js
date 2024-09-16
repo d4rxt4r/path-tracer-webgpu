@@ -1,24 +1,33 @@
+/* global Lights */
+
 import * as ti from '../lib/taichi.js';
 
 import { new_hit_record } from './Hittable.js';
 import { hit_scene } from './Scene.js';
 import { MAX_F32 } from '../const.js';
-import { material_scatter, emitted_light } from './Material.js';
+import { new_scatter_record, material_scatter, material_scattering_pdf, emitted_light } from './Material.js';
 import { random_in_unit_disk_vec3, get_rotation_matrix } from './Vector.js';
 import { get_interval } from './Interval.js';
+import { cosine_pdf_value, cosine_pdf_generate, generate_lights_pdf, pdf_value, mixed_pdf_value, lights_pdf_value } from './PDF.js';
 
 /**
- * @typedef Ray
+ * @typedef TRay
  * @property {import('./Vector').vec3} origin
  * @property {import('./Vector').vec3} direction
  * @property {number} time
  */
 
+const Ray = ti.types.struct({
+    origin: ti.types.vector(ti.f32, 3),
+    direction: ti.types.vector(ti.f32, 3),
+    time: ti.f32,
+});
+
 /**
  * @param {import('./Vector').vec3} origin
  * @param {import('./Vector').vec3} direction
  * @param {number} time
- * @return {Ray}
+ * @return {TRay}
  */
 const new_ray = (origin, direction, time = 0) => {
     return {
@@ -29,7 +38,7 @@ const new_ray = (origin, direction, time = 0) => {
 };
 
 /**
- * @param {Ray} ray
+ * @param {TRay} ray
  * @param {number} t
  * @return {import('./Vector').vec3}
  */
@@ -60,7 +69,7 @@ const defocus_disk_sample = (camera_settings) => {
  * @param {number} i
  * @param {number} j
  * @param {import('./Camera.js').CameraSetting} camera_settings
- * @return {Ray}
+ * @return {TRay}
  */
 const get_ray = (i, j, camera_settings) => {
     const offset = sample_square();
@@ -78,59 +87,82 @@ const get_ray = (i, j, camera_settings) => {
 
 /**
  * Returns the color of the ray after hitting the scene.
- * @param {Ray} ray
+ * @param {TRay} ray
  * @param {number} max_depth
  * @return {import('./Vector').vec4} color
  */
 const ray_color = (r, background_color, max_depth) => {
     let final_color = [0.0, 0.0, 0.0];
     let current_attenuation = [1.0, 1.0, 1.0];
-    const background = background_color;
-
     let depth = 0;
+
     while (depth < max_depth) {
         depth += 1;
         const rec = new_hit_record();
 
+        // If the ray hits nothing, return the accumulated color plus background
         if (!hit_scene(r, get_interval(ti.f32(0.001), ti.f32(MAX_F32)), rec)) {
-            final_color += current_attenuation * background;
+            final_color += current_attenuation * background_color;
             break;
         }
 
-        const mat_data = material_scatter(rec.mat, r, rec);
-        const emitted = emitted_light(rec.mat);
-        final_color += current_attenuation * emitted;
+        const srec = new_scatter_record();
+        material_scatter(rec.mat, r, rec, srec);
+        final_color += current_attenuation * emitted_light(rec.mat, rec);
 
-        const scattered = mat_data.scattered;
-        const attenuation = mat_data.albedo;
-        if (!mat_data.scatter) {
+        // If the material doesn't scatter, return the accumulated color
+        if (!srec.scatter) {
             break;
         }
+
+        // If the material is specular, return the accumulated color
+        if (srec.skip_pdf) {
+            r = srec.skip_pdf_ray;
+            current_attenuation *= srec.attenuation;
+            continue;
+        }
+
+        let pdf_direction = [0.0, 0.0, 0.0];
+        if (ti.random() < 0.5) {
+            pdf_direction = generate_lights_pdf(rec.p, r.time);
+        } else {
+            pdf_direction = cosine_pdf_generate(rec.normal);
+        }
+
+        const scattered = new_ray(rec.p, pdf_direction, r.time);
+        const pdf_val = mixed_pdf_value(
+            lights_pdf_value(rec.p, scattered.direction, r.time),
+            cosine_pdf_value(rec.normal, scattered.direction),
+            // cosine_pdf_value(rec.normal, scattered.direction),
+            // lights_pdf_value(rec.p, scattered.direction, r.time),
+        );
+
+        const scattering_pdf = material_scattering_pdf(rec.mat, r, rec, scattered);
 
         r = scattered;
-        current_attenuation *= attenuation;
+        current_attenuation *= (srec.attenuation * scattering_pdf) / pdf_val;
     }
 
     return final_color;
 };
 
 /**
- * @param {Ray} r
+ * @param {TRay} r
  * @param {import('./Vector').vec3} offset
- * @return {Ray}
+ * @return {TRay}
  */
 const translate_ray = (r, offset) => {
     return new_ray(r.origin - offset, r.direction, r.time);
 };
 
 /**
- * @param {Ray} r
+ * @param {TRay} r
  * @param {import('./Vector').vec3} rotation
- * @return {Ray}
+ * @return {TRay}
  */
 const rotate_ray = (r, rotation) => {
     const rot_mat = get_rotation_matrix(rotation);
     return new_ray(ti.matmul(rot_mat, r.origin), ti.matmul(rot_mat, r.direction), r.time);
 };
 
-export { new_ray, get_ray, sample_square, defocus_disk_sample, ray_at, ray_color, translate_ray, rotate_ray };
+export { Ray, new_ray, get_ray, sample_square, defocus_disk_sample, ray_at, ray_color, translate_ray, rotate_ray };

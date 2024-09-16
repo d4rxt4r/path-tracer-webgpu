@@ -207,6 +207,9 @@ function init_camera_movement(canvas, controllers, get_values) {
             const right_vec = vf.scale(vf.cross(forward_vec, [0, 1, 0]), 0.3);
             add_vec(right_vec);
         }
+        if (key === ' ') {
+            window.rerender?.();
+        }
     }
 
     function rotate_camera(event) {
@@ -241,6 +244,14 @@ function init_camera_movement(canvas, controllers, get_values) {
         prev_mouse_pos.y = event.pageY;
     }
 
+    function change_fov(event) {
+        event.preventDefault();
+        const delta = event.deltaY;
+        const current_fov = controllers.vfov.getValue();
+        const new_fov = current_fov + delta * 0.1;
+        controllers.vfov.setValue(Math.max(10, Math.min(120, new_fov)));
+    }
+
     const prev_mouse_pos = {
         x: 0,
         y: 0,
@@ -256,10 +267,7 @@ function init_camera_movement(canvas, controllers, get_values) {
         is_moving = false;
         is_rotating = false;
     });
-    canvas.addEventListener('contextmenu', (event) => {
-        // Prevent the context menu from appearing
-        event.preventDefault();
-    });
+    canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     canvas.addEventListener('mousemove', (event) => {
         if (is_rotating) {
             rotate_camera(event);
@@ -267,7 +275,7 @@ function init_camera_movement(canvas, controllers, get_values) {
             pan_camera(event);
         }
     });
-
+    canvas.addEventListener('wheel', change_fov, { passive: false });
     window.addEventListener('keydown', move_camera);
 }
 

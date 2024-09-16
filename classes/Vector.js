@@ -169,6 +169,30 @@ const near_zero_vec3 = (vec) => {
     return ti.abs(vec.x) < EPS && ti.abs(vec.y) < EPS && ti.abs(vec.z) < EPS;
 };
 
+const random_cosine_direction_vec3 = () => {
+    const r1 = ti.random();
+    const r2 = ti.random();
+
+    const phi = 2 * Math.PI * r1;
+    const x = Math.cos(phi) * Math.sqrt(r2);
+    const y = Math.sin(phi) * Math.sqrt(r2);
+    const z = Math.sqrt(1 - r2);
+
+    return [x, y, z];
+};
+
+const random_to_sphere = (radius, distance_squared) => {
+    const r1 = ti.random();
+    const r2 = ti.random();
+    const z = 1 + r2 * (Math.sqrt(1 - (radius * radius) / distance_squared) - 1);
+
+    const phi = 2 * Math.PI * r1;
+    const x = Math.cos(phi) * Math.sqrt(1 - z * z);
+    const y = Math.sin(phi) * Math.sqrt(1 - z * z);
+
+    return [x, y, z];
+};
+
 const get_rotation_matrix = (rotation) => {
     const rad_x = degrees_to_radians(rotation.x);
     const rad_y = degrees_to_radians(rotation.y);
@@ -191,16 +215,17 @@ const get_rotation_matrix = (rotation) => {
 };
 
 export {
-    random_f32,
     random_vec3,
     random_range_vec3,
     random_in_unit_sphere_vec3,
     random_unit_vec3,
     random_on_hemisphere_vec3,
     random_in_unit_disk_vec3,
+    random_to_sphere,
     near_zero_vec3,
     reflect_vec3,
     refract_vec3,
+    random_cosine_direction_vec3,
     get_rotation_matrix,
 };
 
