@@ -18,7 +18,7 @@ import vf from './Vector.js';
 
 const get_sphere_center = (center, center2, time) => {
     let end_center = center;
-    if (center2.x + center2.y + center2.z !== 0) {
+    if (center2.x > 0 || center2.y > 0 || center2.z > 0) {
         end_center = center2 - center;
         const pos_ray = new_ray(center, end_center, 0);
         end_center = ray_at(pos_ray, time);
@@ -32,7 +32,7 @@ const get_sphere_center = (center, center2, time) => {
 const get_sphere_aabb = (sphere) => {
     const { center, center2, radius, offset, rotation } = sphere;
 
-    if (center2 && center2.x + center2.y + center2.z !== 0) {
+    if (center2 && (center2[0] > 0 || center2[1] > 0 || center2[2] > 0)) {
         const box1 = get_aabb_points(vf.addVal(center, -radius), vf.addVal(center, radius));
         const box2 = get_aabb_points(vf.addVal(center2, -radius), vf.addVal(center2, radius));
         return translate_aabb(rotate_aabb(get_aabb_bbox(box1, box2), rotation), offset);
@@ -51,7 +51,7 @@ const get_sphere_uv = (p, rec) => {
 
 /**
  * @param {Sphere} sphere
- * @param {import('./Ray').Ray} r
+ * @param {import('./Ray').TRay} r
  * @param {import('./Interval.js').Interval} ray_t
  * @param {import('./Hittable.js').HitRecord} rec
  * @returns {boolean}

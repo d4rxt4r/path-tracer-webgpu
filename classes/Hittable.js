@@ -34,7 +34,7 @@ const new_hit_record = () => {
  * Sets the hit record normal vector.
  * NOTE: the parameter `outward_normal` is assumed to have unit length.
  * @param {HitRecord} rec
- * @param {import("./Ray.js").Ray} r
+ * @param {import("./Ray.js").TRay} r
  * @param {import("./Vector.js").vec3} outward_normal
  */
 const set_face_normal = (rec, r, outward_normal) => {

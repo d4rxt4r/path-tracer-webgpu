@@ -1,19 +1,38 @@
+/* global Stats */
 import * as ti from './lib/taichi.js';
 
 import { EPS, MAX_F32, OBJ_TYPE, MAT_TYPE, TEX_TYPE } from './const.js';
-import { throttle, random_f32, degrees_to_radians } from './classes/Math.js';
+import { random_i32, random_f32, degrees_to_radians, throttle } from './classes/Math.js';
 import { linear_to_gamma, process_color } from './classes/Color.js';
 import { new_ray, ray_at, ray_color, get_ray, sample_square, defocus_disk_sample, translate_ray, rotate_ray } from './classes/Ray.js';
 import { init_scene, hit_object, hit_scene } from './classes/Scene.js';
 import { hit_aabb, get_aabb_axis } from './classes/AABB.js';
+import { new_onb, transform_onb } from './classes/ONB.js';
+import {
+    pdf_value,
+    generate_pdf,
+    generate_mixed_pdf,
+    mixed_pdf_value,
+    sphere_pdf_value,
+    sphere_pdf_generate,
+    quad_pdf_value,
+    quad_pdf_generate,
+    cosine_pdf_value,
+    cosine_pdf_generate,
+    lights_pdf_value,
+    generate_lights_pdf,
+} from './classes/PDF.js';
 import {
     Material,
+    new_scatter_record,
     material_scatter,
     material_reflectance,
     lambertian_scatter,
     metal_scatter,
     dielectric_scatter,
     emitted_light,
+    material_scattering_pdf,
+    lambertian_scattering_pdf,
 } from './classes/Material.js';
 import { Hittable, new_hit_record, set_face_normal } from './classes/Hittable.js';
 import { hit_sphere, get_sphere_center, get_sphere_uv } from './classes/Sphere.js';
@@ -25,6 +44,8 @@ import {
     random_in_unit_sphere_vec3,
     random_on_hemisphere_vec3,
     random_in_unit_disk_vec3,
+    random_cosine_direction_vec3,
+    random_to_sphere,
     near_zero_vec3,
     reflect_vec3,
     refract_vec3,
@@ -54,10 +75,10 @@ init_camera_movement(htmlCanvas, controllers, gui.get_values.bind(gui));
 
 const BVHTree = ti.field(BVHNode, 1000);
 const Scene = ti.field(Hittable, 1000);
+const Lights = ti.field(Hittable, 1000);
 const Materials = ti.field(Material, 1000);
 const Textures = ti.field(Texture, 100);
 
-/* global Stats */
 const stats = new Stats();
 document.body.appendChild(stats.dom);
 
@@ -65,22 +86,25 @@ const main = async () => {
     await ti.init();
 
     let canvas = new ti.Canvas(htmlCanvas);
-    const colorBuffer = ti.Vector.field(3, ti.f32, canvasSize);
-    const pixelsBuffer = ti.Vector.field(4, ti.f32, canvasSize);
+    const color_buffer = ti.Vector.field(3, ti.f32, canvasSize);
+    const pixels_buffer = ti.Vector.field(4, ti.f32, canvasSize);
+    const COUNTER = ti.field(ti.i32, 4);
 
     ti.addToKernelScope({
         total_samples,
         image_width,
         image_height,
-        colorBuffer,
-        pixelsBuffer,
+        color_buffer,
+        pixels_buffer,
         BVHTree,
         Scene,
         Materials,
         Textures,
+        Lights,
+        COUNTER,
     });
 
-    await init_scene(SCENE_LIST[scene_index], Scene, BVHTree, Materials, Textures);
+    await init_scene(SCENE_LIST[scene_index], Scene, Lights, BVHTree, Materials, Textures, COUNTER);
 
     ti.addToKernelScope({
         EPS,
@@ -118,16 +142,35 @@ const main = async () => {
         // AABB
         hit_aabb,
         get_aabb_axis,
+        // ONB
+        new_onb,
+        transform_onb,
+        // PDF
+        pdf_value,
+        generate_pdf,
+        mixed_pdf_value,
+        generate_mixed_pdf,
+        sphere_pdf_value,
+        sphere_pdf_generate,
+        quad_pdf_value,
+        quad_pdf_generate,
+        cosine_pdf_value,
+        cosine_pdf_generate,
+        lights_pdf_value,
+        generate_lights_pdf,
         // Color
         process_color,
         linear_to_gamma,
         // Materials
+        new_scatter_record,
         material_scatter,
         lambertian_scatter,
         metal_scatter,
         material_reflectance,
         dielectric_scatter,
         emitted_light,
+        material_scattering_pdf,
+        lambertian_scattering_pdf,
         // Textures
         texture_color_value,
         get_solid_texture_value,
@@ -138,6 +181,8 @@ const main = async () => {
         random_in_unit_sphere_vec3,
         random_on_hemisphere_vec3,
         random_in_unit_disk_vec3,
+        random_cosine_direction_vec3,
+        random_to_sphere,
         near_zero_vec3,
         reflect_vec3,
         refract_vec3,
@@ -148,6 +193,7 @@ const main = async () => {
         interval_surrounds,
         interval_contains,
         // Math
+        random_i32,
         random_f32,
         degrees_to_radians,
     });
@@ -158,19 +204,19 @@ const main = async () => {
             const i = I[0];
             const j = I[1];
             const ray = get_ray(i, j, camera_settings);
-            colorBuffer[I] += ray_color(ray, camera_settings.background, camera_settings.max_depth);
+            color_buffer[I] += ray_color(ray, camera_settings.background, camera_settings.max_depth);
         }
     });
 
     const clear_color_buffer = ti.kernel(() => {
         for (const I of ti.ndrange(image_width, image_height)) {
-            colorBuffer[I] = [0.0, 0.0, 0.0];
+            color_buffer[I] = [0.0, 0.0, 0.0];
         }
     });
 
     const tone_map = ti.kernel((total_samples) => {
         for (const I of ti.ndrange(image_width, image_height)) {
-            pixelsBuffer[I] = process_color(colorBuffer[I] / total_samples);
+            pixels_buffer[I] = process_color(color_buffer[I] / total_samples);
         }
     });
 
@@ -183,7 +229,7 @@ const main = async () => {
         render(camera_settings);
         total_samples = 1;
         tone_map(total_samples);
-        canvas.setImage(pixelsBuffer);
+        canvas.setImage(pixels_buffer);
 
         stats.end();
     }
@@ -199,7 +245,7 @@ const main = async () => {
             render(camera_settings);
             total_samples += 1;
             tone_map(total_samples);
-            canvas.setImage(pixelsBuffer);
+            canvas.setImage(pixels_buffer);
 
             stats.end();
 
@@ -239,6 +285,8 @@ const main = async () => {
     });
 
     full_pass();
+
+    window.rerender = full_pass;
 };
 
 main();

@@ -28,11 +28,18 @@ const base_obj = get_record_from_struct(Hittable);
  * Initialize the scene
  * @param {Scene} scene_data
  */
-const init_scene = async (scene_data, scene_field, bvh_tree_field, materials_field, textures_field) => {
-    const { objects, materials, textures } = scene_data;
+const init_scene = async (scene_data, scene_field, lights_field, bvh_tree_field, materials_field, textures_field, obj_counter) => {
+    const { objects, lights = [], materials = [], textures = [] } = scene_data;
     for (let i = 0; i < objects.length; i++) {
         const obj = objects[i];
         await scene_field.set([i], {
+            ...base_obj,
+            ...obj,
+        });
+    }
+    for (let i = 0; i < lights.length; i++) {
+        const obj = lights[i];
+        await lights_field.set([i], {
             ...base_obj,
             ...obj,
         });
@@ -43,6 +50,7 @@ const init_scene = async (scene_data, scene_field, bvh_tree_field, materials_fie
     for (let i = 0; i < tree.length; i++) {
         await bvh_tree_field.set([i], tree[i]);
     }
+    await obj_counter.fromArray([objects.length, lights.length, materials.length, textures.length]);
 };
 
 const hit_object = (obj, r, ray_t, rec) => {
@@ -84,7 +92,7 @@ const hit_object = (obj, r, ray_t, rec) => {
 
 /**
  * Checks if a ray intersects with any object in the scene.
- * @param {import("./Ray.js").Ray} r
+ * @param {import("./Ray.js").TRay} r
  * @param {import("./Interval.js").Interval} ray_t
  * @param {HitRecord} rec
  */
