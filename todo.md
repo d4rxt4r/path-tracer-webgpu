@@ -1,5 +1,4 @@
 # Features to add
-- Add rerender button
 - Loading scene anim
 - Render BVH Nodes
 - Moving objects

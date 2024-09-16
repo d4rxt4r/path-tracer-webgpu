@@ -18,34 +18,34 @@ const Scene_0 = {
         },
         {
             type: OBJ_TYPE.SPHERE,
-            center: [0, 0.5, -1],
-            center2: [0, 1.0, -1],
+            center: [0, 0, -1],
+            center2: [0, 0, -1],
             radius: 0.5,
-            mat: 0,
+            mat: 1,
         },
-        // ...get_box_q([0, 0, 0], [0.5, 0.5, 0.5], 2, [-0.3, 0.1, -1.0], [45, 45, 45]),
+        // ...get_box_q([0, 0, 0], [0.5, 0.5, 0.5], 1, [-0.3, 0.1, -1.0], [45, 45, 45]),
         // ...get_box_q([0.1, 0.1, 0.1], [0.4, 0.4, 0.4], 4, [-0.3, 0.1, -1.0], [45, 45, 45]),
-        // {
-        //     type: OBJ_TYPE.SPHERE,
-        //     center: [-1.0, 0, -1.0],
-        //     radius: 0.5,
-        //     mat: 2,
-        // },
-        // {
-        //     type: OBJ_TYPE.SPHERE,
-        //     center: [-1.0, 0.0, -1.0],
-        //     radius: 0.4,
-        //     mat: 3,
-        // },
-        // {
-        //     type: OBJ_TYPE.SPHERE,
-        //     center: [1.0, 0.0, -1.0],
-        //     radius: 0.5,
-        //     mat: 1,
-        // },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [-1.0, 0, -1.0],
+            radius: 0.5,
+            mat: 2,
+        },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [-1.0, 0.0, -1.0],
+            radius: 0.4,
+            mat: 3,
+        },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [1.0, 0.0, -1.0],
+            radius: 0.5,
+            mat: 4,
+        },
         {
             type: OBJ_TYPE.QUAD,
-            Q: [-1.0, 2.0, -2.0],
+            Q: [-1.0, 3.0, -2.0],
             u: [2.0, 0.0, 0.0],
             v: [0.0, 0.0, 2.0],
             mat: 5,
@@ -54,10 +54,9 @@ const Scene_0 = {
     lights: [
         {
             type: OBJ_TYPE.QUAD,
-            Q: [-1.0, 2.0, -2.0],
+            Q: [-1.0, 3.0, -2.0],
             u: [2.0, 0.0, 0.0],
             v: [0.0, 0.0, 2.0],
-            mat: 0,
         },
     ],
     materials: [
@@ -106,7 +105,7 @@ const Scene_0 = {
         },
     ],
     camera: {
-        background: [255, 255, 255],
+        background: [10, 10, 10],
         scene: 0,
         cam_x: 0,
         cam_y: 0.5,
@@ -312,6 +311,24 @@ const Scene_2 = {
             mat: 3,
         },
     ],
+    lights: [
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [0.0, 2.0, 0.0],
+            radius: 2.0,
+        },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [0.0, 2.0, 0.0],
+            radius: 1.0,
+            mat: 2,
+        },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [0.0, 2.0, 0.0],
+            radius: 0.2,
+        },
+    ],
     materials: [
         {
             type: MAT_TYPE.LAMBERTIAN,
@@ -331,7 +348,7 @@ const Scene_2 = {
         {
             type: MAT_TYPE.LIGHT,
             attenuation: [1.0, 1.0, 1.0],
-            k: 1.0,
+            k: 5.0,
         },
     ],
     textures: [
@@ -393,6 +410,14 @@ const Scene_3 = {
             u: [4, 0, 0],
             v: [0, 0, -4],
             mat: 4,
+        },
+    ],
+    lights: [
+        {
+            type: OBJ_TYPE.QUAD,
+            Q: [-6, 0, 1],
+            u: [10, 0, 0],
+            v: [0, 0, 6],
         },
     ],
     materials: [

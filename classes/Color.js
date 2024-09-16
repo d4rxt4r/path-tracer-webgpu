@@ -26,16 +26,6 @@ const process_color = (color) => {
     let g = linear_to_gamma(color.g);
     let b = linear_to_gamma(color.b);
 
-    if (r > 1) {
-        r = 1;
-    }
-    if (g > 1) {
-        g = 1;
-    }
-    if (b > 1) {
-        b = 1;
-    }
-
     return [interval_clamp(intensity, r), interval_clamp(intensity, g), interval_clamp(intensity, b), 1.0];
 };
 

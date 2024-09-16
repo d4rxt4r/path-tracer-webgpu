@@ -134,7 +134,7 @@ const ray_color = (r, background_color, max_depth) => {
             lights_pdf_value(rec.p, scattered.direction, r.time),
             cosine_pdf_value(rec.normal, scattered.direction),
             // cosine_pdf_value(rec.normal, scattered.direction),
-            // pdf_value(Lights[0], rec.p, scattered.direction),
+            // lights_pdf_value(rec.p, scattered.direction, r.time),
         );
 
         const scattering_pdf = material_scattering_pdf(rec.mat, r, rec, scattered);
