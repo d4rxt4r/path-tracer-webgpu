@@ -4,8 +4,7 @@ import * as ti from '../lib/taichi.js';
 
 import { new_ray } from './Ray.js';
 import { MAT_TYPE, get_record_from_struct } from '../const.js';
-import { random_unit_vec3, reflect_vec3, refract_vec3, random_cosine_direction_vec3 } from './Vector.js';
-import { new_onb, transform_onb } from './ONB.js';
+import { random_unit_vec3, reflect_vec3, refract_vec3 } from './Vector.js';
 import { texture_color_value } from './Texture.js';
 
 /**
@@ -25,18 +24,14 @@ const Material = ti.types.struct({
 
 /**
  * @typedef TScatterRecord
- * @property {import('./Vector.js').vec3} attenuation
- * @property {number} pdf
  * @property {boolean} scatter
  * @property {boolean} skip_pdf
  * @property {import('./Ray.js').TRay} skip_pdf_ray
  */
 
 const ScatterRecord = ti.types.struct({
-    pdf: ti.f32,
-    attenuation: ti.types.vector(ti.f32, 3),
-    skip_pdf: ti.i32,
     scatter: ti.i32,
+    skip_pdf: ti.i32,
     skip_pdf_ray: ti.types.struct({
         origin: ti.types.vector(ti.f32, 3),
         direction: ti.types.vector(ti.f32, 3),
@@ -46,10 +41,8 @@ const ScatterRecord = ti.types.struct({
 
 const new_scatter_record = () => {
     return {
-        pdf: 0.0,
-        attenuation: [0.0, 0.0, 0.0],
-        skip_pdf: false,
         scatter: false,
+        skip_pdf: false,
         skip_pdf_ray: {
             origin: [0.0, 0.0, 0.0],
             direction: [0.0, 0.0, 0.0],
@@ -80,15 +73,19 @@ const material_scatter = (mat_index, r_in, rec, srec) => {
         metal_scatter(r_in, rec, mat, srec);
     } else if (mat.type === MAT_TYPE.DIELECTRIC) {
         dielectric_scatter(r_in, rec, mat, srec);
+    } else if (mat.type === MAT_TYPE.ISOTROPIC) {
+        isotropic_scatter(r_in, rec, mat, srec);
     }
 };
 
-const material_scattering_pdf = (mat_index, r_in, rec, scattered) => {
-    const mat = Materials[mat_index];
+const material_scattering_pdf = (r_in, mat, rec, scattered) => {
     let res = 0.0;
 
     if (mat.type === MAT_TYPE.LAMBERTIAN) {
         res = lambertian_scattering_pdf(r_in, rec, scattered);
+    }
+    if (mat.type === MAT_TYPE.ISOTROPIC) {
+        res = isotropic_scattering_pdf();
     }
 
     return res;
@@ -102,20 +99,8 @@ const material_scattering_pdf = (mat_index, r_in, rec, scattered) => {
  * @param {TScatterRecord} srec
  */
 const lambertian_scatter = (r_in, rec, mat, srec) => {
-    let uvw = new_onb(rec.normal);
-    let scatter_direction = transform_onb(uvw, random_cosine_direction_vec3());
-
-    let albedo = mat.attenuation;
-    if (mat.tex > 0) {
-        albedo = texture_color_value(mat.tex, rec.u, rec.v, rec.p);
-    }
-
-    const scattered = new_ray(rec.p, ti.normalized(scatter_direction), r_in.time);
-
-    srec.attenuation = albedo;
     srec.scatter = true;
     srec.skip_pdf = false;
-    srec.pdf = ti.dot(uvw.w, scattered.direction) / Math.PI;
 };
 
 const lambertian_scattering_pdf = (r_in, rec, scattered) => {
@@ -136,8 +121,6 @@ const metal_scatter = (r_in, rec, mat, srec) => {
     let reflected = reflect_vec3(r_in.direction, rec.normal);
     reflected = ti.normalized(reflected) + mat.k * random_unit_vec3();
     const scattered = new_ray(rec.p, reflected, r_in.time);
-
-    srec.attenuation = mat.attenuation;
     srec.scatter = ti.dot(scattered.direction, rec.normal) > 0;
     srec.skip_pdf = true;
     srec.skip_pdf_ray = scattered;
@@ -177,10 +160,17 @@ const dielectric_scatter = (r_in, rec, mat, srec) => {
         direction = reflect_vec3(unit_direction, rec.normal);
     }
 
-    srec.attenuation = mat.attenuation;
     srec.scatter = true;
     srec.skip_pdf = true;
     srec.skip_pdf_ray = new_ray(rec.p, direction, r_in.time);
+};
+
+const isotropic_scatter = (r_in, rec, mat, srec) => {
+    srec.scatter = true;
+};
+
+const isotropic_scattering_pdf = () => {
+    return 1 / (4 * Math.PI);
 };
 
 const emitted_light = (matId, rec) => {
@@ -197,6 +187,16 @@ const emitted_light = (matId, rec) => {
     return res;
 };
 
+const get_mat_data = (mat, rec) => {
+    let attenuation = mat.attenuation;
+    if (mat.tex > 0) {
+        attenuation = texture_color_value(mat.tex, rec.u, rec.v, rec.p);
+    }
+    return {
+        attenuation,
+    };
+};
+
 export {
     Material,
     ScatterRecord,
@@ -207,7 +207,10 @@ export {
     metal_scatter,
     material_reflectance,
     dielectric_scatter,
+    isotropic_scatter,
     emitted_light,
     material_scattering_pdf,
     lambertian_scattering_pdf,
+    isotropic_scattering_pdf,
+    get_mat_data,
 };

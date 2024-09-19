@@ -9,10 +9,10 @@ import { init_scene, hit_object, hit_scene } from './classes/Scene.js';
 import { hit_aabb, get_aabb_axis } from './classes/AABB.js';
 import { new_onb, transform_onb } from './classes/ONB.js';
 import {
-    pdf_value,
-    generate_pdf,
-    generate_mixed_pdf,
+    obj_pdf_value,
+    generate_obj_pdf,
     mixed_pdf_value,
+    mixed_pdf_generate,
     sphere_pdf_value,
     sphere_pdf_generate,
     quad_pdf_value,
@@ -21,6 +21,8 @@ import {
     cosine_pdf_generate,
     lights_pdf_value,
     generate_lights_pdf,
+    unit_sphere_pdf_generate,
+    unit_sphere_pdf_value,
 } from './classes/PDF.js';
 import {
     Material,
@@ -30,9 +32,12 @@ import {
     lambertian_scatter,
     metal_scatter,
     dielectric_scatter,
+    isotropic_scatter,
     emitted_light,
     material_scattering_pdf,
     lambertian_scattering_pdf,
+    isotropic_scattering_pdf,
+    get_mat_data,
 } from './classes/Material.js';
 import { Hittable, new_hit_record, set_face_normal } from './classes/Hittable.js';
 import { hit_sphere, get_sphere_center, get_sphere_uv } from './classes/Sphere.js';
@@ -51,11 +56,12 @@ import {
     refract_vec3,
     get_rotation_matrix,
 } from './classes/Vector.js';
-import { get_interval, interval_clamp, interval_contains, interval_surrounds } from './classes/Interval.js';
+import { get_interval, get_interval_universal, interval_clamp, interval_contains, interval_surrounds } from './classes/Interval.js';
 import { create_gui, copy_camera_settings } from './classes/GUI.js';
 import { BVHNode } from './classes/BVHTree.js';
 import { Texture, texture_color_value, get_solid_texture_value, get_checker_texture_value } from './classes/Texture.js';
 import { get_quad_bbox, get_quad_d, get_quad_normal, get_quad_w, hit_quad, quad_is_interior } from './classes/Quad.js';
+import { hit_constant_medium } from './classes/ConstantMedium.js';
 
 let total_samples = 0;
 let frame_id = null;
@@ -139,6 +145,7 @@ const main = async () => {
         get_quad_d,
         get_quad_w,
         quad_is_interior,
+        hit_constant_medium,
         // AABB
         hit_aabb,
         get_aabb_axis,
@@ -146,10 +153,10 @@ const main = async () => {
         new_onb,
         transform_onb,
         // PDF
-        pdf_value,
-        generate_pdf,
+        obj_pdf_value,
+        generate_obj_pdf,
         mixed_pdf_value,
-        generate_mixed_pdf,
+        mixed_pdf_generate,
         sphere_pdf_value,
         sphere_pdf_generate,
         quad_pdf_value,
@@ -158,6 +165,8 @@ const main = async () => {
         cosine_pdf_generate,
         lights_pdf_value,
         generate_lights_pdf,
+        unit_sphere_pdf_generate,
+        unit_sphere_pdf_value,
         // Color
         process_color,
         linear_to_gamma,
@@ -168,9 +177,12 @@ const main = async () => {
         metal_scatter,
         material_reflectance,
         dielectric_scatter,
+        isotropic_scatter,
         emitted_light,
         material_scattering_pdf,
         lambertian_scattering_pdf,
+        isotropic_scattering_pdf,
+        get_mat_data,
         // Textures
         texture_color_value,
         get_solid_texture_value,
@@ -189,6 +201,7 @@ const main = async () => {
         get_rotation_matrix,
         // Interval
         get_interval,
+        get_interval_universal,
         interval_clamp,
         interval_surrounds,
         interval_contains,

@@ -1,14 +1,14 @@
-/* global Lights */
+/* global Materials */
 
 import * as ti from '../lib/taichi.js';
 
 import { new_hit_record } from './Hittable.js';
 import { hit_scene } from './Scene.js';
 import { MAX_F32 } from '../const.js';
-import { new_scatter_record, material_scatter, material_scattering_pdf, emitted_light } from './Material.js';
+import { new_scatter_record, material_scatter, material_scattering_pdf, emitted_light, get_mat_data } from './Material.js';
 import { random_in_unit_disk_vec3, get_rotation_matrix } from './Vector.js';
 import { get_interval } from './Interval.js';
-import { cosine_pdf_value, cosine_pdf_generate, generate_lights_pdf, pdf_value, mixed_pdf_value, lights_pdf_value } from './PDF.js';
+import { mixed_pdf_value, mixed_pdf_generate } from './PDF.js';
 
 /**
  * @typedef TRay
@@ -106,8 +106,12 @@ const ray_color = (r, background_color, max_depth) => {
             break;
         }
 
+        const mat = Materials[rec.mat];
+        const mat_data = get_mat_data(mat, rec);
+
         const srec = new_scatter_record();
         material_scatter(rec.mat, r, rec, srec);
+
         final_color += current_attenuation * emitted_light(rec.mat, rec);
 
         // If the material doesn't scatter, return the accumulated color
@@ -118,29 +122,17 @@ const ray_color = (r, background_color, max_depth) => {
         // If the material is specular, return the accumulated color
         if (srec.skip_pdf) {
             r = srec.skip_pdf_ray;
-            current_attenuation *= srec.attenuation;
+            current_attenuation *= mat_data.attenuation;
             continue;
         }
 
-        let pdf_direction = [0.0, 0.0, 0.0];
-        if (ti.random() < 0.5) {
-            pdf_direction = generate_lights_pdf(rec.p, r.time);
-        } else {
-            pdf_direction = cosine_pdf_generate(rec.normal);
-        }
-
+        const pdf_direction = mixed_pdf_generate(r, mat, rec);
         const scattered = new_ray(rec.p, pdf_direction, r.time);
-        const pdf_val = mixed_pdf_value(
-            lights_pdf_value(rec.p, scattered.direction, r.time),
-            cosine_pdf_value(rec.normal, scattered.direction),
-            // cosine_pdf_value(rec.normal, scattered.direction),
-            // lights_pdf_value(rec.p, scattered.direction, r.time),
-        );
-
-        const scattering_pdf = material_scattering_pdf(rec.mat, r, rec, scattered);
+        const pdf_val = mixed_pdf_value(r, mat, rec, scattered);
+        const scattering_pdf = material_scattering_pdf(r, mat, rec, scattered);
 
         r = scattered;
-        current_attenuation *= (srec.attenuation * scattering_pdf) / pdf_val;
+        current_attenuation *= (mat_data.attenuation * scattering_pdf) / pdf_val;
     }
 
     return final_color;

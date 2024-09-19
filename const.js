@@ -4,6 +4,8 @@ const MAX_F32 = 2147483647;
 const OBJ_TYPE = {
     SPHERE: 1,
     QUAD: 2,
+    MEDIUM: 3,
+    BOX: 4,
 };
 
 const MAT_TYPE = {
@@ -11,6 +13,7 @@ const MAT_TYPE = {
     METAL: 2,
     DIELECTRIC: 3,
     LIGHT: 4,
+    ISOTROPIC: 5,
 };
 
 const TEX_TYPE = {
