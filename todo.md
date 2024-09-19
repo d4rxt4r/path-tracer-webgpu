@@ -3,7 +3,6 @@
 - Fix constant medium render for box boundary 
 
 - Do not render back face of the quads
-- Add GUI settings to change PDF weights
 - Loading scene anim
 - Render BVH Nodes
 - Moving objects
