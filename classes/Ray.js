@@ -128,7 +128,7 @@ const ray_color = (r, background_color, max_depth) => {
 
         const pdf_direction = mixed_pdf_generate(r, mat, rec);
         const scattered = new_ray(rec.p, pdf_direction, r.time);
-        const pdf_val = mixed_pdf_value(r, mat, rec, scattered);
+        const pdf_val = mixed_pdf_value(r, mat, rec, scattered.direction);
         const scattering_pdf = material_scattering_pdf(r, mat, rec, scattered);
 
         r = scattered;

@@ -115,7 +115,7 @@ const Scene_0 = {
             type: OBJ_TYPE.SPHERE,
             center: [-1.0, 0, -1.0],
             radius: 0.5,
-            mat: 1,
+            mat: 3,
         },
         {
             type: OBJ_TYPE.SPHERE,
@@ -130,7 +130,7 @@ const Scene_0 = {
             v: [0.0, 0.0, 2.0],
             mat: 6,
         },
-        ...get_box_q([0.1, 0.1, 0.1], [0.4, 0.4, 0.4], 5, [-0.3, 0.1, -1.0], [45, 45, 45]),
+        ...get_box_q([0.1, 0.1, 0.1], [0.4, 0.4, 0.4], 8, [-0.3, 0.1, -1.0], [45, 40, 30]),
     ],
     lights: [
         {
@@ -138,6 +138,12 @@ const Scene_0 = {
             Q: [-1.0, 3.0, -2.0],
             u: [2.0, 0.0, 0.0],
             v: [0.0, 0.0, 2.0],
+        },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [-1.0, 0, -1.0],
+            radius: 0.5,
+            mat: 3,
         },
     ],
     materials: [
@@ -161,7 +167,7 @@ const Scene_0 = {
         // glass - 3
         {
             type: MAT_TYPE.DIELECTRIC,
-            attenuation: [1.0, 1.0, 1.0],
+            attenuation: [0.1, 1.0, 0.2],
             k: 1.5,
         },
         // air - 4
@@ -187,6 +193,12 @@ const Scene_0 = {
             type: MAT_TYPE.ISOTROPIC,
             attenuation: [0.0, 1.0, 0.0],
             k: 0.08,
+        },
+        // metal - 8
+        {
+            type: MAT_TYPE.METAL,
+            attenuation: [0.7, 0.22, 0.5],
+            k: 0.23,
         },
     ],
     textures: [

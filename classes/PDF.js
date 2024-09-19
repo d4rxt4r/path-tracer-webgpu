@@ -26,11 +26,11 @@ const generate_obj_pdf = (obj, origin, r_time) => {
 
 const mixed_pdf_value = (r_in, mat, rec, r_out) => {
     const light_weight = 0.5;
-    const lights_pdf = lights_pdf_value(rec.p, r_out.direction, r_in.time);
+    const lights_pdf = lights_pdf_value(rec.p, r_out, r_in.time);
 
     let material_pdf = 0.0;
     if (mat.type === MAT_TYPE.LAMBERTIAN) {
-        material_pdf = cosine_pdf_value(rec.normal, r_out.direction);
+        material_pdf = cosine_pdf_value(rec.normal, r_out);
     } else if (mat.type === MAT_TYPE.ISOTROPIC) {
         material_pdf = unit_sphere_pdf_value();
     }
