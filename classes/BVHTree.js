@@ -117,6 +117,9 @@ function build_bvh_from_obj(obj_list) {
         if (obj.type === OBJ_TYPE.QUAD) {
             bbox = get_quad_bbox(obj);
         }
+        if (obj.type === OBJ_TYPE.MEDIUM) {
+            bbox = obj.radius > 0 ? get_sphere_aabb(obj) : get_quad_bbox(obj);
+        }
         return bbox;
     });
 

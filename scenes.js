@@ -4,6 +4,101 @@ import { get_box_q } from './classes/Quad.js';
 
 import vf from './classes/Vector.js';
 
+function get_cornell_box_base() {
+    return {
+        objects: [
+            {
+                type: OBJ_TYPE.QUAD,
+                Q: [555, 0, 0],
+                u: [0, 555, 0],
+                v: [0, 0, 555],
+                mat: 2,
+            },
+            {
+                type: OBJ_TYPE.QUAD,
+                Q: [0, 0, 0],
+                u: [0, 555, 0],
+                v: [0, 0, 555],
+                mat: 0,
+            },
+            {
+                type: OBJ_TYPE.QUAD,
+                Q: [0, 0, 0],
+                u: [555, 0, 0],
+                v: [0, 0, 555],
+                mat: 1,
+            },
+            {
+                type: OBJ_TYPE.QUAD,
+                Q: [555, 555, 555],
+                u: [-555, 0, 0],
+                v: [0, 0, -555],
+                mat: 1,
+            },
+            {
+                type: OBJ_TYPE.QUAD,
+                Q: [0, 0, 555],
+                u: [555, 0, 0],
+                v: [0, 555, 0],
+                mat: 1,
+            },
+            {
+                type: OBJ_TYPE.QUAD,
+                Q: [213, 554, 227],
+                u: [130, 0, 0],
+                v: [0, 0, 105],
+                mat: 3,
+            },
+        ],
+        lights: [
+            {
+                type: OBJ_TYPE.QUAD,
+                Q: [213, 554, 227],
+                u: [130, 0, 0],
+                v: [0, 0, 105],
+                mat: 0,
+            },
+        ],
+        materials: [
+            // red
+            {
+                type: MAT_TYPE.LAMBERTIAN,
+                attenuation: [0.65, 0.05, 0.05],
+            },
+            // white
+            {
+                type: MAT_TYPE.LAMBERTIAN,
+                attenuation: [0.73, 0.73, 0.73],
+            },
+            // green
+            {
+                type: MAT_TYPE.LAMBERTIAN,
+                attenuation: [0.12, 0.45, 0.15],
+            },
+            // light
+            {
+                type: MAT_TYPE.LIGHT,
+                attenuation: [15.0, 15.0, 15.0],
+                k: 1.0,
+            },
+        ],
+        camera: {
+            scene: 0,
+            background: [0, 0, 0],
+            spp: 200,
+            vfov: 40,
+            cam_x: 278,
+            cam_y: 278,
+            cam_z: -800,
+            at_x: 278,
+            at_y: 278,
+            at_z: 0,
+        },
+    };
+}
+
+const CornellBoxBase = get_cornell_box_base();
+
 /**
  * @type {import("./classes/Scene.js").Scene}
  */
@@ -18,38 +113,24 @@ const Scene_0 = {
         },
         {
             type: OBJ_TYPE.SPHERE,
-            center: [0, 0, -1],
-            center2: [0, 0, -1],
-            radius: 0.5,
-            mat: 1,
-        },
-        // ...get_box_q([0, 0, 0], [0.5, 0.5, 0.5], 1, [-0.3, 0.1, -1.0], [45, 45, 45]),
-        // ...get_box_q([0.1, 0.1, 0.1], [0.4, 0.4, 0.4], 4, [-0.3, 0.1, -1.0], [45, 45, 45]),
-        {
-            type: OBJ_TYPE.SPHERE,
             center: [-1.0, 0, -1.0],
             radius: 0.5,
-            mat: 2,
-        },
-        {
-            type: OBJ_TYPE.SPHERE,
-            center: [-1.0, 0.0, -1.0],
-            radius: 0.4,
             mat: 3,
         },
         {
             type: OBJ_TYPE.SPHERE,
             center: [1.0, 0.0, -1.0],
             radius: 0.5,
-            mat: 4,
+            mat: 2,
         },
         {
             type: OBJ_TYPE.QUAD,
             Q: [-1.0, 3.0, -2.0],
             u: [2.0, 0.0, 0.0],
             v: [0.0, 0.0, 2.0],
-            mat: 5,
+            mat: 6,
         },
+        ...get_box_q([0.1, 0.1, 0.1], [0.4, 0.4, 0.4], 8, [-0.3, 0.1, -1.0], [45, 40, 30]),
     ],
     lights: [
         {
@@ -58,38 +139,66 @@ const Scene_0 = {
             u: [2.0, 0.0, 0.0],
             v: [0.0, 0.0, 2.0],
         },
+        {
+            type: OBJ_TYPE.SPHERE,
+            center: [-1.0, 0, -1.0],
+            radius: 0.5,
+            mat: 3,
+        },
     ],
     materials: [
+        // checkerboard - 0
         {
             type: MAT_TYPE.LAMBERTIAN,
             attenuation: [0.8, 0.8, 0.0],
-            k: 0,
             tex: 2,
         },
+        // lambertian diffuse tex - 1
         {
             type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.1, 0.2, 0.5],
-            k: 0,
+            attenuation: [0.9, 0.9, 0.9],
+            tex: 1,
         },
+        // lambertian diffuse - 2
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            attenuation: [0.9, 0.9, 0.9],
+        },
+        // glass - 3
         {
             type: MAT_TYPE.DIELECTRIC,
-            attenuation: [1.0, 1.0, 1.0],
+            attenuation: [0.1, 1.0, 0.2],
             k: 1.5,
         },
+        // air - 4
         {
             type: MAT_TYPE.DIELECTRIC,
             attenuation: [1.0, 1.0, 1.0],
-            k: 1.0 / 1.5,
+            k: 1 / 1.5,
         },
+        // mirror - 5
         {
             type: MAT_TYPE.METAL,
             attenuation: [0.8, 0.9, 0.8],
             k: 0.01,
         },
+        // light - 6
         {
             type: MAT_TYPE.LIGHT,
             attenuation: [0.8, 0.8, 0.4],
             k: 4.0,
+        },
+        // constant density - 7
+        {
+            type: MAT_TYPE.ISOTROPIC,
+            attenuation: [0.0, 1.0, 0.0],
+            k: 0.08,
+        },
+        // metal - 8
+        {
+            type: MAT_TYPE.METAL,
+            attenuation: [0.7, 0.22, 0.5],
+            k: 0.23,
         },
     ],
     textures: [
@@ -113,6 +222,8 @@ const Scene_0 = {
         at_x: 0.0,
         at_y: 0.0,
         at_z: -2.0,
+        max_depth: 10,
+        spp: 50,
     },
 };
 
@@ -149,9 +260,10 @@ const Scene_1 = {
     ],
     lights: [
         {
-            type: OBJ_TYPE.SPHERE,
-            center: [0, 1, 0],
-            radius: 1.0,
+            type: OBJ_TYPE.QUAD,
+            Q: [0, 0, 0],
+            v: [1, 0, 0],
+            u: [0, 0, 1],
         },
     ],
     materials: [
@@ -221,11 +333,6 @@ for (let a = -11; a < 11; a++) {
                     radius: 0.2,
                     mat: Scene_1.materials.length - 1,
                 });
-                Scene_1.lights.push({
-                    type: OBJ_TYPE.SPHERE,
-                    center,
-                    radius: 0.2,
-                });
             } else if (choose_mat < 0.8) {
                 // diffuse
                 const albedo = [Math.random(), Math.random(), Math.random()];
@@ -270,11 +377,6 @@ for (let a = -11; a < 11; a++) {
                     radius: 0.2,
                     mat: Scene_1.materials.length - 1,
                 });
-                // Scene_1.lights.push({
-                //     type: OBJ_TYPE.SPHERE,
-                //     center,
-                //     radius: 0.2,
-                // });
             }
         }
     }
@@ -458,96 +560,16 @@ const Scene_3 = {
  * @type {import("./classes/Scene.js").Scene}
  */
 const Scene_4 = {
+    ...CornellBoxBase,
     name: 'Cornell Box',
     objects: [
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [555, 0, 0],
-            u: [0, 555, 0],
-            v: [0, 0, 555],
-            mat: 2,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 0],
-            u: [0, 555, 0],
-            v: [0, 0, 555],
-            mat: 0,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 0],
-            u: [555, 0, 0],
-            v: [0, 0, 555],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [555, 555, 555],
-            u: [-555, 0, 0],
-            v: [0, 0, -555],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 555],
-            u: [555, 0, 0],
-            v: [0, 555, 0],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [213, 554, 227],
-            u: [130, 0, 0],
-            v: [0, 0, 105],
-            mat: 3,
-        },
+        ...CornellBoxBase.objects,
         ...get_box_q([0, 0, 0], [165, 330, 165], 1, [265, 0, 295], [0, 15, 0]),
         ...get_box_q([0, 0, 0], [165, 165, 165], 1, [130, 0, 65], [0, -18, 0]),
     ],
-    lights: [
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [213, 554, 227],
-            u: [130, 0, 0],
-            v: [0, 0, 105],
-            mat: 0,
-        },
-    ],
-    materials: [
-        // red
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.65, 0.05, 0.05],
-        },
-        // white
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.73, 0.73, 0.73],
-        },
-        // green
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.12, 0.45, 0.15],
-        },
-        // light
-        {
-            type: MAT_TYPE.LIGHT,
-            attenuation: [15.0, 15.0, 15.0],
-            k: 1.0,
-        },
-    ],
     camera: {
+        ...CornellBoxBase.camera,
         scene: 4,
-        background: [0, 0, 0],
-        spp: 200,
-        vfov: 40,
-        cam_x: 278,
-        cam_y: 278,
-        cam_z: -800,
-        at_x: 278,
-        at_y: 278,
-        at_z: 0,
     },
 };
 
@@ -555,83 +577,15 @@ const Scene_4 = {
  * @type {import("./classes/Scene.js").Scene}
  */
 const Scene_5 = {
+    ...CornellBoxBase,
     name: 'Cornell Box (Mirror Test)',
     objects: [
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [555, 0, 0],
-            u: [0, 555, 0],
-            v: [0, 0, 555],
-            mat: 2,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 0],
-            u: [0, 555, 0],
-            v: [0, 0, 555],
-            mat: 0,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 0],
-            u: [555, 0, 0],
-            v: [0, 0, 555],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [555, 555, 555],
-            u: [-555, 0, 0],
-            v: [0, 0, -555],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 555],
-            u: [555, 0, 0],
-            v: [0, 555, 0],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [213, 554, 227],
-            u: [130, 0, 0],
-            v: [0, 0, 105],
-            mat: 3,
-        },
+        ...CornellBoxBase.objects,
         ...get_box_q([0, 0, 0], [165, 330, 165], 4, [265, 0, 295], [0, 15, 0]),
         ...get_box_q([0, 0, 0], [165, 165, 165], 1, [130, 0, 65], [0, -18, 0]),
     ],
-    lights: [
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [213, 554, 227],
-            u: [130, 0, 0],
-            v: [0, 0, 105],
-        },
-    ],
     materials: [
-        // red
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.65, 0.05, 0.05],
-        },
-        // white
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.73, 0.73, 0.73],
-        },
-        // green
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.12, 0.45, 0.15],
-        },
-        // light
-        {
-            type: MAT_TYPE.LIGHT,
-            attenuation: [15.0, 15.0, 15.0],
-            k: 1.0,
-        },
+        ...CornellBoxBase.materials,
         // mirror
         {
             type: MAT_TYPE.METAL,
@@ -640,16 +594,8 @@ const Scene_5 = {
         },
     ],
     camera: {
+        ...CornellBoxBase.camera,
         scene: 5,
-        background: [0, 0, 0],
-        spp: 200,
-        vfov: 40,
-        cam_x: 278,
-        cam_y: 278,
-        cam_z: -800,
-        at_x: 278,
-        at_y: 278,
-        at_z: 0,
     },
 };
 
@@ -657,50 +603,10 @@ const Scene_5 = {
  * @type {import("./classes/Scene.js").Scene}
  */
 const Scene_6 = {
+    ...CornellBoxBase,
     name: 'Cornell Box (Glass Test)',
     objects: [
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [555, 0, 0],
-            u: [0, 555, 0],
-            v: [0, 0, 555],
-            mat: 2,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 0],
-            u: [0, 555, 0],
-            v: [0, 0, 555],
-            mat: 0,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 0],
-            u: [555, 0, 0],
-            v: [0, 0, 555],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [555, 555, 555],
-            u: [-555, 0, 0],
-            v: [0, 0, -555],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 555],
-            u: [555, 0, 0],
-            v: [0, 555, 0],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [213, 554, 227],
-            u: [130, 0, 0],
-            v: [0, 0, 105],
-            mat: 3,
-        },
+        ...CornellBoxBase.objects,
         ...get_box_q([0, 0, 0], [165, 330, 165], 1, [265, 0, 295], [0, 15, 0]),
         {
             type: OBJ_TYPE.SPHERE,
@@ -710,12 +616,7 @@ const Scene_6 = {
         },
     ],
     lights: [
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [213, 554, 227],
-            u: [130, 0, 0],
-            v: [0, 0, 105],
-        },
+        ...CornellBoxBase.lights,
         {
             type: OBJ_TYPE.SPHERE,
             center: [190, 90, 190],
@@ -723,27 +624,7 @@ const Scene_6 = {
         },
     ],
     materials: [
-        // red
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.65, 0.05, 0.05],
-        },
-        // white
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.73, 0.73, 0.73],
-        },
-        // green
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.12, 0.45, 0.15],
-        },
-        // light
-        {
-            type: MAT_TYPE.LIGHT,
-            attenuation: [15.0, 15.0, 15.0],
-            k: 1.0,
-        },
+        ...CornellBoxBase.materials,
         // glass
         {
             type: MAT_TYPE.DIELECTRIC,
@@ -752,16 +633,8 @@ const Scene_6 = {
         },
     ],
     camera: {
+        ...CornellBoxBase.camera,
         scene: 6,
-        background: [0, 0, 0],
-        spp: 200,
-        vfov: 40,
-        cam_x: 278,
-        cam_y: 278,
-        cam_z: -800,
-        at_x: 278,
-        at_y: 278,
-        at_z: 0,
     },
 };
 
@@ -769,50 +642,10 @@ const Scene_6 = {
  * @type {import("./classes/Scene.js").Scene}
  */
 const Scene_7 = {
+    ...CornellBoxBase,
     name: 'Cornell Box (Stress Test)',
     objects: [
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [555, 0, 0],
-            u: [0, 555, 0],
-            v: [0, 0, 555],
-            mat: 2,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 0],
-            u: [0, 555, 0],
-            v: [0, 0, 555],
-            mat: 0,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 0],
-            u: [555, 0, 0],
-            v: [0, 0, 555],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [555, 555, 555],
-            u: [-555, 0, 0],
-            v: [0, 0, -555],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [0, 0, 555],
-            u: [555, 0, 0],
-            v: [0, 555, 0],
-            mat: 1,
-        },
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [213, 554, 227],
-            u: [130, 0, 0],
-            v: [0, 0, 105],
-            mat: 3,
-        },
+        ...CornellBoxBase.objects,
         {
             type: OBJ_TYPE.SPHERE,
             center: [400, 277.5, 277.5],
@@ -840,12 +673,7 @@ const Scene_7 = {
         },
     ],
     lights: [
-        {
-            type: OBJ_TYPE.QUAD,
-            Q: [213, 554, 227],
-            u: [130, 0, 0],
-            v: [0, 0, 105],
-        },
+        ...CornellBoxBase.lights,
         {
             type: OBJ_TYPE.SPHERE,
             center: [400, 277.5, 277.5],
@@ -858,27 +686,7 @@ const Scene_7 = {
         },
     ],
     materials: [
-        // 0 - red
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.65, 0.05, 0.05],
-        },
-        // 1 - white
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.73, 0.73, 0.73],
-        },
-        // 2 - green
-        {
-            type: MAT_TYPE.LAMBERTIAN,
-            attenuation: [0.12, 0.45, 0.15],
-        },
-        // 3 - light
-        {
-            type: MAT_TYPE.LIGHT,
-            attenuation: [15.0, 15.0, 15.0],
-            k: 1.0,
-        },
+        ...CornellBoxBase.materials,
         // 4 - glass
         {
             type: MAT_TYPE.DIELECTRIC,
@@ -899,20 +707,57 @@ const Scene_7 = {
         },
     ],
     camera: {
+        ...CornellBoxBase.camera,
         scene: 7,
-        background: [0, 0, 0],
-        spp: 200,
-        vfov: 40,
-        cam_x: 278,
-        cam_y: 278,
-        cam_z: -800,
-        at_x: 278,
-        at_y: 278,
-        at_z: 0,
     },
 };
 
-const SCENE_LIST = [Scene_0, Scene_1, Scene_2, Scene_3, Scene_4, Scene_5, Scene_6, Scene_7];
+/**
+ * @type {import("./classes/Scene.js").Scene}
+ */
+const Scene_8 = {
+    ...CornellBoxBase,
+    name: 'Cornell Box (Fog Test)',
+    objects: [
+        ...CornellBoxBase.objects,
+        {
+            type: OBJ_TYPE.MEDIUM,
+            center: [400, 277.5, 277.5],
+            radius: 120,
+            mat: 4,
+        },
+        {
+            type: OBJ_TYPE.MEDIUM,
+            center: [140, 90, 400],
+            radius: 90,
+            mat: 5,
+        },
+        // ...get_box_q([0, 0, 0], [165, 330, 165], 4, [265, 0, 295], [0, 15, 0], OBJ_TYPE.MEDIUM),
+        // ...get_box_q([0, 0, 0], [165, 165, 165], 5, [130, 0, 65], [0, -18, 0], OBJ_TYPE.MEDIUM),
+    ],
+    lights: CornellBoxBase.lights,
+    materials: [
+        ...CornellBoxBase.materials,
+        // black smoke - 4
+        {
+            type: MAT_TYPE.ISOTROPIC,
+            attenuation: [0.0, 0.0, 0.0],
+            k: 0.001,
+        },
+        // white smoke - 5
+        {
+            type: MAT_TYPE.ISOTROPIC,
+            attenuation: [1.0, 1.0, 1.0],
+            k: 0.001,
+        },
+    ],
+    camera: {
+        ...CornellBoxBase.camera,
+        scene: 8,
+    },
+};
+
+const SCENE_LIST = [Scene_0, Scene_1, Scene_2, Scene_3, Scene_4, Scene_5, Scene_6, Scene_7, Scene_8];
 const SCENE_SELECT = Object.fromEntries(SCENE_LIST.map((scene, key) => [scene.name, key]));
 
 export { SCENE_LIST, SCENE_SELECT };

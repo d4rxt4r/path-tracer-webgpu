@@ -12,6 +12,7 @@ import { get_interval } from './Interval.js';
 import { hit_aabb } from './AABB.js';
 import { build_bvh_from_obj } from './BVHTree.js';
 import { init_textures } from './Texture.js';
+import { hit_constant_medium } from './ConstantMedium.js';
 
 const base_obj = get_record_from_struct(Hittable);
 
@@ -39,9 +40,14 @@ const init_scene = async (scene_data, scene_field, lights_field, bvh_tree_field,
     }
     for (let i = 0; i < lights.length; i++) {
         const obj = lights[i];
+        let center = obj.center;
+        if (obj.type === OBJ_TYPE.QUAD) {
+            center = [(obj.Q[0] + obj.v[0] + obj.v[0]) / 2, obj.Q[1] + obj.v[1] + obj.v[1], (obj.Q[2] + obj.v[2] + obj.v[2]) / 2];
+        }
         await lights_field.set([i], {
             ...base_obj,
             ...obj,
+            center,
         });
     }
     await init_materials(materials, materials_field);
@@ -72,6 +78,9 @@ const hit_object = (obj, r, ray_t, rec) => {
     }
     if (obj.type === OBJ_TYPE.QUAD) {
         res = hit_quad(obj, ray, ray_t, rec);
+    }
+    if (obj.type === OBJ_TYPE.MEDIUM) {
+        res = hit_constant_medium(obj, ray, ray_t, rec);
     }
 
     if (res) {

@@ -121,7 +121,7 @@ const hit_quad = (quad, r, ray_t, rec) => {
     return res;
 };
 
-const get_box_q = (a, b, mat, offset = [0, 0, 0], rotation = [0, 0, 0]) => {
+const get_box_q = (a, b, mat, offset = [0, 0, 0], rotation = [0, 0, 0], type = OBJ_TYPE.QUAD) => {
     const min = vf.min(a, b);
     const max = vf.max(a, b);
 
@@ -133,12 +133,12 @@ const get_box_q = (a, b, mat, offset = [0, 0, 0], rotation = [0, 0, 0]) => {
     const negDz = vf.scale(dz, -1);
 
     return [
-        { type: OBJ_TYPE.QUAD, Q: [min[0], min[1], max[2]], u: dx, v: dy, mat, offset, rotation }, // front
-        { type: OBJ_TYPE.QUAD, Q: [max[0], min[1], max[2]], u: negDz, v: dy, mat, offset, rotation }, // right
-        { type: OBJ_TYPE.QUAD, Q: [max[0], min[1], min[2]], u: negDx, v: dy, mat, offset, rotation }, // back
-        { type: OBJ_TYPE.QUAD, Q: [min[0], min[1], min[2]], u: dz, v: dy, mat, offset, rotation }, // left
-        { type: OBJ_TYPE.QUAD, Q: [min[0], max[1], max[2]], u: dx, v: negDz, mat, offset, rotation }, // top
-        { type: OBJ_TYPE.QUAD, Q: [min[0], min[1], min[2]], u: dx, v: dz, mat, offset, rotation }, // bottom
+        { type, Q: [min[0], min[1], max[2]], u: dx, v: dy, mat, offset, rotation }, // front
+        { type, Q: [max[0], min[1], max[2]], u: negDz, v: dy, mat, offset, rotation }, // right
+        { type, Q: [max[0], min[1], min[2]], u: negDx, v: dy, mat, offset, rotation }, // back
+        { type, Q: [min[0], min[1], min[2]], u: dz, v: dy, mat, offset, rotation }, // left
+        { type, Q: [min[0], max[1], max[2]], u: dx, v: negDz, mat, offset, rotation }, // top
+        { type, Q: [min[0], min[1], min[2]], u: dx, v: dz, mat, offset, rotation }, // bottom
     ];
 };
 

@@ -27,6 +27,7 @@ const CameraSettingCPU = ti.types.struct({
     defocus_disk_v_z: ti.f32,
     max_depth: ti.i32,
     background: ti.types.vector(ti.f32, 3),
+    lights_pdf_weight: ti.f32,
 });
 
 /**
@@ -39,6 +40,8 @@ const CameraSettingCPU = ti.types.struct({
  * @property {import("./Vector.js").vec3} defocus_disk_u
  * @property {import("./Vector.js").vec3} defocus_disk_v
  * @property {number} max_depth
+ * @property {import("./Vector.js").vec3} background
+ * @property {number} lights_pdf_weight
  */
 
 const CameraSetting = ti.types.struct({
@@ -51,6 +54,7 @@ const CameraSetting = ti.types.struct({
     defocus_disk_v: ti.types.vector(ti.f32, 3),
     max_depth: ti.i32,
     background: ti.types.vector(ti.f32, 3),
+    lights_pdf_weight: ti.f32,
 });
 
 /**
@@ -68,6 +72,7 @@ const initialize_camera = (cam_set_cpu) => {
         defocus_disk_v: [cam_set_cpu.defocus_disk_v_x, cam_set_cpu.defocus_disk_v_y, cam_set_cpu.defocus_disk_v_z],
         max_depth: cam_set_cpu.max_depth,
         background: cam_set_cpu.background,
+        lights_pdf_weight: cam_set_cpu.lights_pdf_weight,
     };
 };
 
@@ -136,6 +141,7 @@ const get_camera_settings = (settings, image_width, image_height) => {
         defocus_disk_v_y: defocus_disk_v[1],
         defocus_disk_v_z: defocus_disk_v[2],
         background: [background.r / 255, background.g / 255, background.b / 255],
+        lights_pdf_weight: settings.lights_pdf_weight,
     };
 };
 

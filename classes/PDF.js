@@ -1,7 +1,7 @@
 /* global Lights, COUNTER */
 import * as ti from '../lib/taichi.js';
 
-import { MAX_F32, OBJ_TYPE } from '../const.js';
+import { MAX_F32, OBJ_TYPE, MAT_TYPE } from '../const.js';
 import { random_cosine_direction_vec3, random_to_sphere, random_unit_vec3 } from './Vector.js';
 import { new_onb, transform_onb } from './ONB.js';
 import { new_hit_record } from './Hittable.js';
@@ -11,30 +11,42 @@ import { get_interval } from './Interval.js';
 import { get_sphere_center, hit_sphere } from './Sphere.js';
 import { random_i32 } from './Math.js';
 
-const pdf_value = (obj, origin, direction, r_time) => {
+const obj_pdf_value = (obj, origin, direction, r_time) => {
     let res = 0.0;
     if (obj.type === OBJ_TYPE.SPHERE) res = sphere_pdf_value(obj, origin, direction, r_time);
     if (obj.type === OBJ_TYPE.QUAD) res = quad_pdf_value(obj, origin, direction);
     return res;
 };
-const generate_pdf = (obj, origin, r_time) => {
+const generate_obj_pdf = (obj, origin, r_time) => {
     let res = [1.0, 0.0, 0.0];
     if (obj.type === OBJ_TYPE.SPHERE) res = sphere_pdf_generate(obj, origin, r_time);
     if (obj.type === OBJ_TYPE.QUAD) res = quad_pdf_generate(obj, origin);
     return res;
 };
 
-const mixed_pdf_value = (p1, p2) => {
-    const weight = 0.5;
-    return weight * p1 + (1 - weight) * p2;
-};
-const generate_mixed_pdf = (p1, p2) => {
-    const weight = 0.5;
-    let res = p2;
-    if (ti.random() < weight) {
-        res = p1;
+const mixed_pdf_value = (r_in, mat, rec, r_out, lights_weight) => {
+    const lights_pdf = lights_pdf_value(rec.p, r_out, r_in.time);
+
+    let material_pdf = 0.0;
+    if (mat.type === MAT_TYPE.LAMBERTIAN) {
+        material_pdf = cosine_pdf_value(rec.normal, r_out);
+    } else if (mat.type === MAT_TYPE.ISOTROPIC) {
+        material_pdf = unit_sphere_pdf_value();
     }
-    return res;
+
+    return lights_weight * lights_pdf + (1 - lights_weight) * material_pdf;
+};
+
+const mixed_pdf_generate = (r, mat, rec, lights_weight) => {
+    let pdf_direction = [0.0, 0.0, 0.0];
+    if (ti.random() <= lights_weight) {
+        pdf_direction = generate_lights_pdf(rec.p, r.time);
+    } else if (mat.type === MAT_TYPE.LAMBERTIAN) {
+        pdf_direction = cosine_pdf_generate(rec.normal);
+    } else if (mat.type === MAT_TYPE.ISOTROPIC) {
+        pdf_direction = unit_sphere_pdf_generate();
+    }
+    return pdf_direction;
 };
 
 const lights_pdf_value = (origin, direction, r_time) => {
@@ -42,7 +54,7 @@ const lights_pdf_value = (origin, direction, r_time) => {
     let sum = 0.0;
 
     for (let i of ti.range(COUNTER[1])) {
-        sum += weight * pdf_value(Lights[i], origin, direction, r_time);
+        sum += weight * obj_pdf_value(Lights[i], origin, direction, r_time);
     }
 
     return sum;
@@ -51,7 +63,7 @@ const generate_lights_pdf = (origin, r_time) => {
     const rand_int = random_i32(0, COUNTER[1] - 1);
     const rand_obj = Lights[rand_int];
 
-    return generate_pdf(rand_obj, origin, r_time);
+    return generate_obj_pdf(rand_obj, origin, r_time);
 };
 
 const sphere_pdf_value = (obj, origin, direction, r_time) => {
@@ -104,10 +116,10 @@ const cosine_pdf_generate = (w) => {
 };
 
 export {
-    pdf_value,
-    generate_pdf,
-    generate_mixed_pdf,
+    obj_pdf_value,
+    generate_obj_pdf,
     mixed_pdf_value,
+    mixed_pdf_generate,
     lights_pdf_value,
     generate_lights_pdf,
     sphere_pdf_generate,
