@@ -14,6 +14,8 @@ import { SCENE_SELECT } from '../scenes.js';
  * @property {number} vfov
  * @property {number} defocus_angle
  * @property {number} focus_dist
+ * @property {import('./Vector.js').vec3} background
+ * @property {number} lights_pdf_weight
  */
 
 const default_settings = {
@@ -26,6 +28,8 @@ const default_settings = {
     at_x: 0.0,
     at_y: 0.0,
     at_z: 0.0,
+
+    lights_pdf_weight: 0.5,
 
     spp: 50,
     max_depth: 50,
@@ -69,6 +73,7 @@ const create_gui = (user_settings = {}) => {
     controllers.focus_dist.min(0.01).listen(false);
     controllers.defocus_angle.min(0).max(2).step(0.01).listen(false);
     controllers.vfov.min(1).max(110).step(1).listen(false);
+    controllers.lights_pdf_weight.min(0).max(1).step(0.01).listen(false);
 
     gui.get_values = function () {
         return this.save().controllers;

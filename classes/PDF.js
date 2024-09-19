@@ -2,7 +2,7 @@
 import * as ti from '../lib/taichi.js';
 
 import { MAX_F32, OBJ_TYPE, MAT_TYPE } from '../const.js';
-import { random_cosine_direction_vec3, random_to_sphere, random_unit_vec3, reflect_vec3 } from './Vector.js';
+import { random_cosine_direction_vec3, random_to_sphere, random_unit_vec3 } from './Vector.js';
 import { new_onb, transform_onb } from './ONB.js';
 import { new_hit_record } from './Hittable.js';
 import { hit_quad } from './Quad.js';
@@ -24,8 +24,7 @@ const generate_obj_pdf = (obj, origin, r_time) => {
     return res;
 };
 
-const mixed_pdf_value = (r_in, mat, rec, r_out) => {
-    const light_weight = 0.5;
+const mixed_pdf_value = (r_in, mat, rec, r_out, lights_weight) => {
     const lights_pdf = lights_pdf_value(rec.p, r_out, r_in.time);
 
     let material_pdf = 0.0;
@@ -35,19 +34,17 @@ const mixed_pdf_value = (r_in, mat, rec, r_out) => {
         material_pdf = unit_sphere_pdf_value();
     }
 
-    return light_weight * lights_pdf + (1 - light_weight) * material_pdf;
+    return lights_weight * lights_pdf + (1 - lights_weight) * material_pdf;
 };
 
-const mixed_pdf_generate = (r, mat, rec) => {
+const mixed_pdf_generate = (r, mat, rec, lights_weight) => {
     let pdf_direction = [0.0, 0.0, 0.0];
-    if (ti.random() < 0.5) {
+    if (ti.random() <= lights_weight) {
         pdf_direction = generate_lights_pdf(rec.p, r.time);
-    } else {
-        if (mat.type === MAT_TYPE.LAMBERTIAN) {
-            pdf_direction = cosine_pdf_generate(rec.normal);
-        } else if (mat.type === MAT_TYPE.ISOTROPIC) {
-            pdf_direction = unit_sphere_pdf_generate();
-        }
+    } else if (mat.type === MAT_TYPE.LAMBERTIAN) {
+        pdf_direction = cosine_pdf_generate(rec.normal);
+    } else if (mat.type === MAT_TYPE.ISOTROPIC) {
+        pdf_direction = unit_sphere_pdf_generate();
     }
     return pdf_direction;
 };

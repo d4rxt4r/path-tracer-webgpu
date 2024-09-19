@@ -30,34 +30,20 @@ const hit_constant_medium = (medium, r, ray_t, rec) => {
     if (type === OBJ_TYPE.SPHERE && !hit_sphere(medium, ray, get_interval_universal(), rec1)) {
         res = false;
     }
-    // if (type === OBJ_TYPE.BOX && !hit_aabb(ray, get_interval_universal(), rec1)) {
-    //     res = false;
-    // }
 
-    if (res) {
-        if (type === OBJ_TYPE.SPHERE && !hit_sphere(medium, ray, get_interval(rec1.t + 0.0001, MAX_F32), rec2)) {
-            res = false;
-        }
-        // if (type === OBJ_TYPE.QUAD && !hit_quad(medium, ray, get_interval(rec1.t + 0.0001, MAX_F32), rec2)) {
-        //     res = false;
-        // }
+    if (res && type === OBJ_TYPE.SPHERE && !hit_sphere(medium, ray, get_interval(rec1.t + 0.0001, MAX_F32), rec2)) {
+        res = false;
     }
 
     if (res) {
-        if (rec1.t < ray_t.min) {
-            rec1.t = ray_t.min;
-        }
-        if (rec2.t > ray_t.max) {
-            rec2.t = ray_t.max;
-        }
+        rec1.t = Math.max(rec1.t, ray_t.min);
+        rec2.t = Math.min(rec2.t, ray_t.max);
         if (rec1.t >= rec2.t) {
             res = false;
         }
 
         if (res) {
-            if (rec1.t < 0) {
-                rec1.t = 0;
-            }
+            rec1.t = Math.max(rec1.t, 0);
             const ray_length = r.direction.normSqr();
             const distance_inside_boundary = (rec2.t - rec1.t) * ray_length;
             const neg_inv_density = -1.0 / Materials[medium.mat].k;

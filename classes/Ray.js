@@ -89,20 +89,20 @@ const get_ray = (i, j, camera_settings) => {
  * Returns the color of the ray after hitting the scene.
  * @param {TRay} ray
  * @param {number} max_depth
- * @return {import('./Vector').vec4} color
+ * @param {import('./Camera.js').CameraSetting} camera_settings
  */
-const ray_color = (r, background_color, max_depth) => {
+const ray_color = (r, camera_settings) => {
     let final_color = [0.0, 0.0, 0.0];
     let current_attenuation = [1.0, 1.0, 1.0];
     let depth = 0;
 
-    while (depth < max_depth) {
+    while (depth < camera_settings.max_depth) {
         depth += 1;
         const rec = new_hit_record();
 
         // If the ray hits nothing, return the accumulated color plus background
         if (!hit_scene(r, get_interval(ti.f32(0.001), ti.f32(MAX_F32)), rec)) {
-            final_color += current_attenuation * background_color;
+            final_color += current_attenuation * camera_settings.background;
             break;
         }
 
@@ -126,9 +126,9 @@ const ray_color = (r, background_color, max_depth) => {
             continue;
         }
 
-        const pdf_direction = mixed_pdf_generate(r, mat, rec);
+        const pdf_direction = mixed_pdf_generate(r, mat, rec, camera_settings.lights_pdf_weight);
         const scattered = new_ray(rec.p, pdf_direction, r.time);
-        const pdf_val = mixed_pdf_value(r, mat, rec, scattered.direction);
+        const pdf_val = mixed_pdf_value(r, mat, rec, scattered.direction, camera_settings.lights_pdf_weight);
         const scattering_pdf = material_scattering_pdf(r, mat, rec, scattered);
 
         r = scattered;

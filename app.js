@@ -217,7 +217,7 @@ const main = async () => {
             const i = I[0];
             const j = I[1];
             const ray = get_ray(i, j, camera_settings);
-            color_buffer[I] += ray_color(ray, camera_settings.background, camera_settings.max_depth);
+            color_buffer[I] += ray_color(ray, camera_settings);
         }
     });
 
