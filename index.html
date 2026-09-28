@@ -18,6 +18,7 @@
             cursor: move;
         }
         #scene-loading {
+            z-index: 2;
             position: absolute;
             top: 50%;
             left: 50%;
@@ -35,6 +36,12 @@
         }
         #scene-loading[hidden] {
             display: none;
+        }
+        #bvh-canvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
         }
         .loading-spinner {
             width: 18px;
@@ -58,6 +65,7 @@
     <div class="render-shell">
         <div id="render-viewport" role="region" aria-label="Scene renderer" aria-busy="true">
             <canvas id="canvas" width="1200" height="675"></canvas>
+            <canvas id="bvh-canvas" width="1200" height="675" aria-hidden="true" hidden></canvas>
         </div>
         <div id="scene-loading" role="status" lang="ru">
             <span class="loading-spinner" aria-hidden="true"></span>

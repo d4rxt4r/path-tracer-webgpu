@@ -4,9 +4,11 @@ import { create_gui, copy_camera_settings } from './classes/GUI.js';
 import { get_camera_settings, init_camera_movement } from './classes/Camera.js';
 import { create_renderer } from './renderer/Renderer.js';
 import { RenderLoop } from './renderer/RenderLoop.js';
+import { BvhView } from './renderer/BvhView.js';
 
 async function main() {
     const htmlCanvas = document.getElementById('canvas');
+    const bvhView = new BvhView(document.getElementById('bvh-canvas'));
     const { gui, controllers } = create_gui(SCENE_LIST[0].camera);
     const stats = new Stats();
     document.body.appendChild(stats.dom);
@@ -23,20 +25,44 @@ async function main() {
             stats.end();
             document.getElementById('render-error')?.remove();
         },
-        onError: show_error,
-        onLoadingChange: set_loading,
+        onError: (error) => {
+            bvhView.clear();
+            show_error(error);
+        },
+        onLoadingChange: (loading) => {
+            if (loading) bvhView.clear();
+            set_loading(loading);
+        },
+        onView: (state) => {
+            if (state.bvh.mode === 'off') {
+                bvhView.clear();
+                gui.set_bvh_info(null, 0);
+                return;
+            }
+            const data = renderer.getBvhDebugData();
+            const count = bvhView.draw(data, state.camera, state.bvh, htmlCanvas.width, htmlCanvas.height);
+            gui.set_bvh_info(data.maxDepth, count);
+        },
     });
     let copying = false;
-    const request_render = () => {
+    let camera;
+    const request_render = (preserveCamera = false) => {
         try {
             const settings = gui.get_values();
+            const nextCamera = get_camera_settings(settings, htmlCanvas.width, htmlCanvas.height);
+            if (!preserveCamera || JSON.stringify(camera) !== JSON.stringify(nextCamera)) {
+                camera = nextCamera;
+                bvhView.clear();
+            }
             loop.update({
                 scene: SCENE_LIST[settings.scene],
-                camera: get_camera_settings(settings, htmlCanvas.width, htmlCanvas.height),
+                camera,
                 spp: settings.spp,
+                bvh: { mode: settings.bvh_mode, selection: settings.bvh_selection, depth: settings.bvh_depth },
             });
         } catch (error) {
             loop.stop();
+            bvhView.clear();
             show_error(error);
         }
     };
@@ -50,7 +76,7 @@ async function main() {
                 copying = false;
             }
         }
-        request_render();
+        request_render(event.property.startsWith('bvh_'));
     });
     const dispose_movement = init_camera_movement(htmlCanvas, controllers, gui.get_values.bind(gui));
     window.rerender = request_render;

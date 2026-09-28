@@ -16,6 +16,10 @@ import { SCENE_SELECT } from '../scenes.js';
  * @property {number} focus_dist
  * @property {import('./Vector.js').vec3} background
  * @property {number} lights_pdf_weight
+ * @property {'off'|'overlay'|'only'} bvh_mode
+ * @property {'level'|'leaves'} bvh_selection
+ * @property {number} bvh_depth
+ * @property {number} bvh_count
  */
 
 export const default_settings = {
@@ -75,6 +79,29 @@ const create_gui = (user_settings = {}) => {
     controllers.vfov.min(1).max(110).step(1).listen(false);
     controllers.lights_pdf_weight.min(0).max(1).step(0.01).listen(false);
 
+    Object.assign(settings, { bvh_mode: 'off', bvh_selection: 'level', bvh_depth: 2, bvh_count: 0 });
+    const bvh = gui.addFolder('BVH');
+    controllers.bvh_mode = bvh.add(settings, 'bvh_mode', { Render: 'off', 'Render + BVH': 'overlay', 'BVH only': 'only' }).name('View');
+    controllers.bvh_selection = bvh.add(settings, 'bvh_selection', { Level: 'level', Leaves: 'leaves' }).name('Nodes');
+    controllers.bvh_depth = bvh.add(settings, 'bvh_depth', 0, 2, 1).name('Depth');
+    controllers.bvh_count = bvh.add(settings, 'bvh_count').name('Selected nodes').disable();
+    const update_bvh_controls = () => {
+        controllers.bvh_selection.disable(settings.bvh_mode === 'off');
+        controllers.bvh_depth.disable(settings.bvh_mode === 'off' || settings.bvh_selection === 'leaves');
+    };
+    update_bvh_controls();
+    controllers.bvh_mode.onChange(update_bvh_controls);
+    controllers.bvh_selection.onChange(update_bvh_controls);
+    gui.set_bvh_info = (maxDepth, count) => {
+        if (maxDepth !== null) {
+            settings.bvh_depth = Math.min(settings.bvh_depth, maxDepth);
+            controllers.bvh_depth.max(maxDepth).updateDisplay();
+        }
+        settings.bvh_count = count;
+        controllers.bvh_count.updateDisplay();
+        update_bvh_controls();
+    };
+
     gui.get_values = function () {
         return { ...settings, background: Array.isArray(settings.background) ? [...settings.background] : settings.background };
     };
@@ -92,7 +119,7 @@ const copy_camera_settings = (user_settings = {}, controllers) => {
     };
 
     Object.keys(settings).forEach((key) => {
-        controllers[key].setValue(settings[key]);
+        if (!key.startsWith('bvh_')) controllers[key].setValue(settings[key]);
     });
 };
 

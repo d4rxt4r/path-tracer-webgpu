@@ -40,6 +40,16 @@ Field capacity is fixed for a renderer's lifetime. Larger scenes fail before upl
 
 CPU tests use Node's built-in runner; GPU tests run real Taichi kernels plus all preset scenes in Chrome. ESLint integrates Prettier: four spaces, single quotes, trailing commas, 140 columns. Vendored `lib/` files are excluded from formatting and remain unchanged.
 
+## BVH inspection
+
+Open the **BVH** GUI folder and choose **Render + BVH** for a transparent wireframe overlay, or **BVH only** for a dark-background view without path tracing. **Render** disables visualization. **Nodes → Level** shows one tree depth (root = 0); **Leaves** shows each object's bounding box. **Selected nodes** counts the selection, including boxes outside the camera view. Colors follow depth. The initial depth is 2, clamped to the scene's tree height; view settings survive scene changes.
+
+The wireframe shows the actual acceleration bounds, including padding around quads, rotated-box world bounds, and the full motion bounds of moving spheres. Lines remain visible through geometry and use a pinhole camera, without depth-of-field blur. Camera controls work in all modes. Changing only BVH settings preserves accumulated samples; camera/scene changes invalidate them before tracing resumes. The overlay is redrawn only when its view changes.
+
+`renderer.getBvhDebugData()` lazily returns a cached, immutable CPU snapshot (`nodes`, `levels`, `leaves`, `maxDepth`), replaced after a successful scene upload. `RenderLoop.update()` accepts optional `bvh: { mode: 'off' | 'overlay' | 'only', selection: 'level' | 'leaves', depth: number }`; its optional synchronous `onView(state)` callback paints the accepted view. Keep the same camera object for presentation-only updates. The disabled mode needs no debug snapshot, GPU readback, or extra drawing pass.
+
+GPU/browser tests include silhouette alignment, all nine BVH presets, accumulation preservation, stale-camera handling and leaf views of 2,000/10,000 objects. `artifacts/gpu-validation.json` records projection and Canvas draw-submission timings at 1200 x 675 (five warmups, ten measurements); these exclude asynchronous compositing and are not full-frame latency or FPS. Screenshots are saved as `artifacts/bvh-only.png` and `artifacts/bvh-overlay.png`.
+
 ## Boxes and participating media
 
 A box is one analytic primitive and one BVH leaf. Its local corners can be supplied in either order; all three dimensions must be positive. Rotation uses degrees, around the local origin in X/Y/Z order, followed by translation.

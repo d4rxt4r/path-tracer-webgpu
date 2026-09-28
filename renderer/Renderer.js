@@ -11,6 +11,7 @@ import { process_color } from '../classes/Color.js';
 import { register_kernel_scope } from './KernelScope.js';
 import { prepare_scene, scene_capacities } from './SceneData.js';
 import { upload_scene } from './Upload.js';
+import { prepare_bvh_debug } from './BvhDebug.js';
 
 export async function create_renderer(htmlCanvas, { scenes, width = 1200, height = Math.floor((width * 9) / 16), fused = true }) {
     if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) throw new Error('Invalid render dimensions');
@@ -69,6 +70,8 @@ export async function create_renderer(htmlCanvas, { scenes, width = 1200, height
     const canvas = new ti.Canvas(htmlCanvas);
     let camera;
     let samples = 0;
+    let preparedBvh = [];
+    let debugData = null;
 
     return {
         fields,
@@ -81,7 +84,12 @@ export async function create_renderer(htmlCanvas, { scenes, width = 1200, height
             const prepared = prepare_scene(scene);
             const preparedAt = performance.now();
             await upload_scene(prepared, fields);
+            preparedBvh = prepared.bvh;
+            debugData = null;
             return { prepareMs: preparedAt - start, uploadMs: performance.now() - preparedAt };
+        },
+        getBvhDebugData() {
+            return (debugData ??= prepare_bvh_debug(preparedBvh));
         },
         setCamera(value) {
             camera = value;

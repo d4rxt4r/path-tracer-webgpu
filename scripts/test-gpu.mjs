@@ -1,6 +1,7 @@
 import { openBrowser, seededPage, sourceProvenance } from './browser.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { check_loading } from './loading-checks.mjs';
+import { check_bvh_controls } from './bvh-checks.mjs';
 const run = await openBrowser();
 try {
     const page = await seededPage(run.browser);
@@ -16,6 +17,10 @@ try {
     await boxes.goto(`${run.origin}/tests/box-gpu.html`);
     results.push(...(await boxes.evaluate(() => window.boxResults)));
     await boxes.close();
+    const bvh = await seededPage(run.browser);
+    await bvh.goto(`${run.origin}/tests/bvh-view.html`);
+    results.push(...(await bvh.evaluate(() => window.bvhResults)));
+    await bvh.close();
     const integration = await seededPage(run.browser);
     await integration.goto(`${run.origin}/tests/integration.html`);
     results.push(...(await integration.evaluate(() => window.integrationResults)));
@@ -38,6 +43,7 @@ try {
         await stress.close();
     }
     results.push(...(await check_loading(run)));
+    results.push(...(await check_bvh_controls(run)));
     const unsupported = await seededPage(run.browser, ['does not support WebGPU']);
     await unsupported.addInitScript(() => Object.defineProperty(navigator, 'gpu', { value: undefined }));
     await unsupported.goto(run.origin);

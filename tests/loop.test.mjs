@@ -84,6 +84,7 @@ test('render failure stops the loop and is reported once', async () => {
     const errors = [];
     const loop = new RenderLoop(
         {
+            samples: 0,
             loadScene: async () => {},
             setCamera: () => {},
             reset: async () => {},

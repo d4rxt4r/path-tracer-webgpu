@@ -7,10 +7,11 @@ export class RenderLoop {
             cancel = (id) => globalThis.cancelAnimationFrame(id),
             onFrame = () => {},
             onLoadingChange = () => {},
+            onView = () => {},
             onError = console.error,
         } = {},
     ) {
-        Object.assign(this, { renderer, schedule, cancel, onFrame, onLoadingChange, onError });
+        Object.assign(this, { renderer, schedule, cancel, onFrame, onLoadingChange, onView, onError });
         this.revision = 0;
         this.frame = null;
         this.busy = false;
@@ -58,18 +59,24 @@ export class RenderLoop {
                 this.camera = null;
             }
             if (revision !== this.revision) return;
-            if (state.camera !== this.camera) {
+            const onlyBvh = state.bvh?.mode === 'only';
+            if (!onlyBvh && state.camera !== this.camera) {
                 this.renderer.setCamera(state.camera);
                 await this.renderer.reset();
                 this.camera = state.camera;
             }
             if (revision !== this.revision) return;
-            await this.renderer.renderSample();
+            const target = state.preview ? 1 : state.spp;
+            if (!onlyBvh && this.renderer.samples < target) await this.renderer.renderSample();
             if (revision !== this.revision) return;
+            if (state !== this.viewState) {
+                this.onView(state);
+                this.viewState = state;
+            }
             this.presentedScene = state.scene;
             this.setLoading(false);
             this.onFrame(this.renderer.samples);
-            if (this.renderer.samples >= (state.preview ? 1 : state.spp)) this.desired = null;
+            if (onlyBvh || this.renderer.samples >= target) this.desired = null;
         } catch (error) {
             if (revision === this.revision) {
                 this.stop();
