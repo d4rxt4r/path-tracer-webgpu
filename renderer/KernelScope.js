@@ -57,6 +57,7 @@ import { get_interval, get_interval_universal, interval_clamp, interval_contains
 import { texture_color_value, get_solid_texture_value, get_checker_texture_value } from '../classes/Texture.js';
 import { get_quad_bbox, get_quad_d, get_quad_normal, get_quad_w, hit_quad, quad_is_interior } from '../classes/Quad.js';
 import { hit_constant_medium } from '../classes/ConstantMedium.js';
+import { hit_box, box_local_ray, box_interval } from '../classes/Box.js';
 
 export function register_kernel_scope(fields) {
     ti.addToKernelScope(fields);
@@ -94,6 +95,9 @@ export function register_kernel_scope(fields) {
         get_quad_w,
         quad_is_interior,
         hit_constant_medium,
+        hit_box,
+        box_local_ray,
+        box_interval,
         // AABB
         hit_aabb,
         get_aabb_axis,

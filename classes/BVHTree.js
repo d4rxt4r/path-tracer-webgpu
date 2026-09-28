@@ -5,6 +5,7 @@ import { AABB, get_aabb, get_aabb_bbox, get_aabb_centroid } from './AABB.js';
 import { get_interval_axis } from './Interval.js';
 import { get_sphere_aabb } from './Sphere.js';
 import { get_quad_bbox } from './Quad.js';
+import { prepare_box, get_box_bbox } from './Box.js';
 
 const BVHNode = ti.types.struct({
     parent_index: ti.i32,
@@ -116,15 +117,11 @@ class BVHBuilder {
 function build_bvh_from_obj(obj_list) {
     const primitives = obj_list.map((obj, index) => {
         let bbox = null;
-        if (obj.type === OBJ_TYPE.SPHERE) {
-            bbox = get_sphere_aabb(obj);
-        }
-        if (obj.type === OBJ_TYPE.QUAD) {
-            bbox = get_quad_bbox(obj);
-        }
-        if (obj.type === OBJ_TYPE.MEDIUM) {
-            bbox = obj.radius > 0 ? get_sphere_aabb(obj) : get_quad_bbox(obj);
-        }
+        const geometry = obj.boundary ?? obj;
+        const type = obj.type === OBJ_TYPE.MEDIUM ? obj.boundary_type || obj.boundary?.type || OBJ_TYPE.SPHERE : obj.type;
+        if (type === OBJ_TYPE.BOX) bbox = obj.bbox ?? get_box_bbox(prepare_box(geometry));
+        if (type === OBJ_TYPE.SPHERE) bbox = get_sphere_aabb(geometry);
+        if (type === OBJ_TYPE.QUAD && obj.type !== OBJ_TYPE.MEDIUM) bbox = get_quad_bbox(geometry);
         if (!bbox) throw new Error(`Unsupported object type: ${obj.type}`);
         return { bbox, index, centroid: get_aabb_centroid(bbox) };
     });

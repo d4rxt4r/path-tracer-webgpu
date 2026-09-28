@@ -11,6 +11,10 @@ try {
     if (!adapter || adapter.fallback) throw new Error('Hardware WebGPU adapter required');
     console.log('Adapter:', JSON.stringify(adapter));
     const results = await page.evaluate(() => window.gpuResults);
+    const boxes = await seededPage(run.browser);
+    await boxes.goto(`${run.origin}/tests/box-gpu.html`);
+    results.push(...(await boxes.evaluate(() => window.boxResults)));
+    await boxes.close();
     const integration = await seededPage(run.browser);
     await integration.goto(`${run.origin}/tests/integration.html`);
     results.push(...(await integration.evaluate(() => window.integrationResults)));

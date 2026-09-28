@@ -1,6 +1,5 @@
 import * as ti from '../lib/taichi.js';
 
-import { OBJ_TYPE } from '../const.js';
 import { ray_at } from './Ray.js';
 import { set_face_normal } from './Hittable.js';
 import { get_interval, interval_contains } from './Interval.js';
@@ -121,25 +120,4 @@ const hit_quad = (quad, r, ray_t, rec) => {
     return res;
 };
 
-const get_box_q = (a, b, mat, offset = [0, 0, 0], rotation = [0, 0, 0], type = OBJ_TYPE.QUAD) => {
-    const min = vf.min(a, b);
-    const max = vf.max(a, b);
-
-    const dx = [max[0] - min[0], 0, 0];
-    const dy = [0, max[1] - min[1], 0];
-    const dz = [0, 0, max[2] - min[2]];
-
-    const negDx = vf.scale(dx, -1);
-    const negDz = vf.scale(dz, -1);
-
-    return [
-        { type, Q: [min[0], min[1], max[2]], u: dx, v: dy, mat, offset, rotation }, // front
-        { type, Q: [max[0], min[1], max[2]], u: negDz, v: dy, mat, offset, rotation }, // right
-        { type, Q: [max[0], min[1], min[2]], u: negDx, v: dy, mat, offset, rotation }, // back
-        { type, Q: [min[0], min[1], min[2]], u: dz, v: dy, mat, offset, rotation }, // left
-        { type, Q: [min[0], max[1], max[2]], u: dx, v: negDz, mat, offset, rotation }, // top
-        { type, Q: [min[0], min[1], min[2]], u: dx, v: dz, mat, offset, rotation }, // bottom
-    ];
-};
-
-export { get_quad_bbox, get_quad_normal, get_quad_d, get_quad_w, quad_is_interior, hit_quad, get_box_q };
+export { get_quad_bbox, get_quad_normal, get_quad_d, get_quad_w, quad_is_interior, hit_quad };

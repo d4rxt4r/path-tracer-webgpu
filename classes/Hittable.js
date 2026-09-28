@@ -61,6 +61,8 @@ const set_face_normal = (rec, r, outward_normal) => {
 
 const Hittable = ti.types.struct({
     type: ti.i32,
+    boundary_type: ti.i32,
+    box_index: ti.i32,
     // material
     mat: ti.i32,
     // quad

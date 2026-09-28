@@ -4,6 +4,7 @@ import { Hittable } from '../classes/Hittable.js';
 import { Material } from '../classes/Material.js';
 import { Texture } from '../classes/Texture.js';
 import { BVHNode } from '../classes/BVHTree.js';
+import { BoxData } from '../classes/Box.js';
 import { CameraSettingCPU, initialize_camera } from '../classes/Camera.js';
 import { get_ray, ray_color } from '../classes/Ray.js';
 import { process_color } from '../classes/Color.js';
@@ -26,6 +27,7 @@ export async function create_renderer(htmlCanvas, { scenes, width = 1200, height
         Materials: ti.field(Material, capacities.materials),
         Textures: ti.field(Texture, capacities.textures),
         BVHTree: ti.field(BVHNode, capacities.nodes),
+        Boxes: ti.field(BoxData, capacities.boxes),
         COUNTER: ti.field(ti.i32, 4),
     };
     if (Object.values(fields).reduce((bytes, field) => bytes + field.sizeBytes, 0) > storageLimit)

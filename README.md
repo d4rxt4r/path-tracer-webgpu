@@ -35,3 +35,28 @@ Raw JSON and canvas screenshots go to ignored `artifacts/`. See [review and reco
 Field capacity is fixed for a renderer's lifetime. Larger scenes fail before upload; configure the intended scene set at creation. Taichi's runtime/kernel scope is global and its public API does not provide per-field disposal or a device-loss subscription. The application reuses fields and compiled kernels rather than repeatedly allocating renderers. Async failures stop rendering and appear in a recoverable status message.
 
 CPU tests use Node's built-in runner; GPU tests run real Taichi kernels plus all preset scenes in Chrome. ESLint integrates Prettier: four spaces, single quotes, trailing commas, 140 columns. Vendored `lib/` files are excluded from formatting and remain unchanged.
+
+## Boxes and participating media
+
+A box is one analytic primitive and one BVH leaf. Its local corners can be supplied in either order; all three dimensions must be positive. Rotation uses degrees, around the local origin in X/Y/Z order, followed by translation.
+
+```js
+const boundary = {
+    type: OBJ_TYPE.BOX,
+    min: [0, 0, 0],
+    max: [165, 165, 165],
+    offset: [130, 0, 65],
+    rotation: [0, -18, 0],
+};
+// Visible surface with an ordinary material:
+const solid = { ...boundary, mat: 1 };
+// Invisible boundary containing a scattering medium:
+const fog = { type: OBJ_TYPE.MEDIUM, mat: 5, boundary };
+// materials[5] = { type: MAT_TYPE.ISOTROPIC, attenuation: [1, 1, 1], k: 0.01 };
+```
+
+`MEDIUM.boundary` accepts `SPHERE` or `BOX`; put transforms on the boundary. Its material is ignored: the outer medium's material supplies attenuation and positive density `k`. Legacy flat sphere media remain supported, including `center2` motion. Arbitrary quad volumes are not supported yet. Add a separate surface object only when a visible shell is desired.
+
+The old `get_box_q` generator was removed; replace its spread calls with single `BOX` records. Boxes in `lights` expand into six quad sampling targets internally. Reusable capacities include those targets and a separate `Boxes` geometry field. The low-level `init_scene` helper now takes the `Boxes` field as its last argument; application code should use `renderer.loadScene`.
+
+See [BOX and fog validation](docs/box-medium.md) for tests, timings and the Fog Test image.

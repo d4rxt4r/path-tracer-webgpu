@@ -1,6 +1,5 @@
 import { OBJ_TYPE, MAT_TYPE, TEX_TYPE } from './const.js';
 import { random_f32 } from './classes/Math.js';
-import { get_box_q } from './classes/Quad.js';
 
 import vf from './classes/Vector.js';
 
@@ -130,7 +129,7 @@ const Scene_0 = {
             v: [0.0, 0.0, 2.0],
             mat: 6,
         },
-        ...get_box_q([0.1, 0.1, 0.1], [0.4, 0.4, 0.4], 8, [-0.3, 0.1, -1.0], [45, 40, 30]),
+        { type: OBJ_TYPE.BOX, min: [0.1, 0.1, 0.1], max: [0.4, 0.4, 0.4], mat: 8, offset: [-0.3, 0.1, -1.0], rotation: [45, 40, 30] },
     ],
     lights: [
         {
@@ -564,8 +563,8 @@ const Scene_4 = {
     name: 'Cornell Box',
     objects: [
         ...CornellBoxBase.objects,
-        ...get_box_q([0, 0, 0], [165, 330, 165], 1, [265, 0, 295], [0, 15, 0]),
-        ...get_box_q([0, 0, 0], [165, 165, 165], 1, [130, 0, 65], [0, -18, 0]),
+        { type: OBJ_TYPE.BOX, min: [0, 0, 0], max: [165, 330, 165], mat: 1, offset: [265, 0, 295], rotation: [0, 15, 0] },
+        { type: OBJ_TYPE.BOX, min: [0, 0, 0], max: [165, 165, 165], mat: 1, offset: [130, 0, 65], rotation: [0, -18, 0] },
     ],
     camera: {
         ...CornellBoxBase.camera,
@@ -581,8 +580,8 @@ const Scene_5 = {
     name: 'Cornell Box (Mirror Test)',
     objects: [
         ...CornellBoxBase.objects,
-        ...get_box_q([0, 0, 0], [165, 330, 165], 4, [265, 0, 295], [0, 15, 0]),
-        ...get_box_q([0, 0, 0], [165, 165, 165], 1, [130, 0, 65], [0, -18, 0]),
+        { type: OBJ_TYPE.BOX, min: [0, 0, 0], max: [165, 330, 165], mat: 4, offset: [265, 0, 295], rotation: [0, 15, 0] },
+        { type: OBJ_TYPE.BOX, min: [0, 0, 0], max: [165, 165, 165], mat: 1, offset: [130, 0, 65], rotation: [0, -18, 0] },
     ],
     materials: [
         ...CornellBoxBase.materials,
@@ -607,7 +606,7 @@ const Scene_6 = {
     name: 'Cornell Box (Glass Test)',
     objects: [
         ...CornellBoxBase.objects,
-        ...get_box_q([0, 0, 0], [165, 330, 165], 1, [265, 0, 295], [0, 15, 0]),
+        { type: OBJ_TYPE.BOX, min: [0, 0, 0], max: [165, 330, 165], mat: 1, offset: [265, 0, 295], rotation: [0, 15, 0] },
         {
             type: OBJ_TYPE.SPHERE,
             center: [190, 90, 190],
@@ -722,18 +721,20 @@ const Scene_8 = {
         ...CornellBoxBase.objects,
         {
             type: OBJ_TYPE.MEDIUM,
-            center: [400, 277.5, 277.5],
-            radius: 120,
+            boundary: { type: OBJ_TYPE.SPHERE, center: [400, 277.5, 277.5], radius: 120 },
             mat: 4,
         },
+        // {
+        //     type: OBJ_TYPE.MEDIUM,
+        //     center: [140, 90, 400],
+        //     radius: 90,
+        //     mat: 5,
+        // },
         {
             type: OBJ_TYPE.MEDIUM,
-            center: [140, 90, 400],
-            radius: 90,
             mat: 5,
+            boundary: { type: OBJ_TYPE.BOX, min: [0, 0, 0], max: [165, 165, 165], offset: [130, 0, 65], rotation: [0, -18, 0] },
         },
-        // ...get_box_q([0, 0, 0], [165, 330, 165], 4, [265, 0, 295], [0, 15, 0], OBJ_TYPE.MEDIUM),
-        // ...get_box_q([0, 0, 0], [165, 165, 165], 5, [130, 0, 65], [0, -18, 0], OBJ_TYPE.MEDIUM),
     ],
     lights: CornellBoxBase.lights,
     materials: [

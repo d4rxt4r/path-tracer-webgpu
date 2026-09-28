@@ -3,6 +3,7 @@ import { register_kernel_scope } from '../renderer/KernelScope.js';
 import { Hittable, new_hit_record } from '../classes/Hittable.js';
 import { Material } from '../classes/Material.js';
 import { BVHNode } from '../classes/BVHTree.js';
+import { BoxData } from '../classes/Box.js';
 import { Texture } from '../classes/Texture.js';
 import { init_scene, hit_scene, hit_object } from '../classes/Scene.js';
 import { hit_aabb } from '../classes/AABB.js';
@@ -21,7 +22,8 @@ async function run() {
     const Textures = ti.field(Texture, 16);
     const BVHTree = ti.field(BVHNode, 31);
     const COUNTER = ti.field(ti.i32, 4);
-    register_kernel_scope({ Scene, Lights, Materials, Textures, BVHTree, COUNTER });
+    const Boxes = ti.field(BoxData, 16);
+    register_kernel_scope({ Scene, Lights, Materials, Textures, BVHTree, COUNTER, Boxes });
     const results = [];
     const check = (name, value, expected, tolerance = 1e-5) => {
         const pass = Number.isFinite(value) && Math.abs(value - expected) <= tolerance;
@@ -29,7 +31,7 @@ async function run() {
         if (!pass) console.error(`FAIL ${name}: ${value}, expected ${expected}`);
     };
     const load = (objects, lights = [], materials = [{ type: 1, attenuation: [1, 1, 1] }]) =>
-        init_scene({ objects, lights, materials, textures: [] }, Scene, Lights, BVHTree, Materials, Textures, COUNTER);
+        init_scene({ objects, lights, materials, textures: [] }, Scene, Lights, BVHTree, Materials, Textures, COUNTER, Boxes);
     const sphere = { type: 1, center: [0, 0, -3], radius: 1, mat: 0 };
     const quad = { type: 2, Q: [-1, -1, -2], u: [2, 0, 0], v: [0, 2, 0], mat: 0 };
     // COUNTER[4] is added by the corrected loader. Keep legacy input length compatible before the fix.

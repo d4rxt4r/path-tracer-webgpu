@@ -1,6 +1,6 @@
 import { prepare_scene } from '../renderer/SceneData.js';
 import { upload_scene } from '../renderer/Upload.js';
-/* global BVHTree, Scene, COUNTER */
+/* global BVHTree, Scene, COUNTER, Boxes */
 
 import { OBJ_TYPE } from '../const.js';
 import { hit_sphere } from './Sphere.js';
@@ -8,9 +8,19 @@ import { hit_quad } from './Quad.js';
 import { get_interval } from './Interval.js';
 import { hit_aabb } from './AABB.js';
 import { hit_constant_medium } from './ConstantMedium.js';
+import { hit_box } from './Box.js';
 
 /** CPU validation/preparation and GPU upload are separate from kernel intersection helpers. */
-const init_scene = async (scene_data, scene_field, lights_field, bvh_tree_field, materials_field, textures_field, obj_counter) => {
+const init_scene = async (
+    scene_data,
+    scene_field,
+    lights_field,
+    bvh_tree_field,
+    materials_field,
+    textures_field,
+    obj_counter,
+    boxes_field,
+) => {
     const prepared = prepare_scene(scene_data);
     await upload_scene(prepared, {
         Scene: scene_field,
@@ -19,6 +29,7 @@ const init_scene = async (scene_data, scene_field, lights_field, bvh_tree_field,
         Materials: materials_field,
         Textures: textures_field,
         COUNTER: obj_counter,
+        Boxes: boxes_field,
     });
 };
 
@@ -27,6 +38,7 @@ const hit_object = (obj, r, ray_t, rec) => {
     let res = false;
     if (obj.type === OBJ_TYPE.SPHERE) res = hit_sphere(obj, r, ray_t, rec);
     else if (obj.type === OBJ_TYPE.QUAD) res = hit_quad(obj, r, ray_t, rec);
+    else if (obj.type === OBJ_TYPE.BOX) res = hit_box(obj, Boxes[obj.box_index], r, ray_t, rec);
     else if (obj.type === OBJ_TYPE.MEDIUM) res = hit_constant_medium(obj, r, ray_t, rec);
     return res;
 };

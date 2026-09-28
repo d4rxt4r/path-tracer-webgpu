@@ -1,4 +1,5 @@
 import { object_defaults, material_defaults, texture_defaults, node_defaults } from './SceneData.js';
+import { box_defaults } from '../classes/Box.js';
 
 export async function upload_records(field, records, fallback) {
     const capacity = field.dimensions[0];
@@ -13,6 +14,7 @@ export async function upload_scene(prepared, fields) {
         [fields.Materials, prepared.materials, material_defaults],
         [fields.Textures, prepared.textures, texture_defaults],
         [fields.BVHTree, prepared.bvh, node_defaults],
+        [fields.Boxes, prepared.boxes, box_defaults],
     ];
     // Validate every capacity before any field is changed.
     for (const [field, records] of uploads) {

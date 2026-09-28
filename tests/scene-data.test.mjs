@@ -11,13 +11,13 @@ test('static sphere defaults to the same endpoint, not the world origin', () => 
 test('capacities include 2N-1 BVH nodes and the fallback texture', () => {
     assert.deepEqual(
         scene_capacities([{ ...scene, objects: Array(600).fill(scene.objects[0]), textures: [{ type: 1, color: [1, 1, 1] }] }]),
-        { objects: 600, lights: 1, materials: 1, textures: 2, nodes: 1199 },
+        { objects: 600, lights: 1, boxes: 1, materials: 1, textures: 2, nodes: 1199 },
     );
 });
 test('invalid references and unsupported geometry fail before GPU upload', () => {
     assert.throws(() => prepare_scene({ ...scene, objects: [{ ...scene.objects[0], mat: 2 }] }), /material/i);
     assert.throws(() => prepare_scene({ ...scene, objects: [{ ...scene.objects[0], radius: 0 }] }), /radius/i);
-    assert.throws(() => prepare_scene({ ...scene, objects: [{ type: 4, mat: 0 }] }), /unsupported/i);
+    assert.throws(() => prepare_scene({ ...scene, objects: [{ type: 999, mat: 0 }] }), /unsupported/i);
     assert.throws(() => prepare_scene({ ...scene, objects: [{ ...scene.objects[0], center: [NaN, 0, 0] }] }), /finite/i);
     assert.throws(() => prepare_scene({ ...scene, lights: [{ type: 3, center: [0, 0, 0], radius: 1 }] }), /light/i);
 });

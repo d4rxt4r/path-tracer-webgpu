@@ -45,6 +45,30 @@ async function run() {
         pass: renderer.samples === 2 && (await renderer.fields.COUNTER.toArray())[0] === 8,
     });
     const before = await renderer.fields.COUNTER.toArray();
+    const firstObject = JSON.stringify(await renderer.fields.Scene.get([0]));
+    const box = { type: 4, min: [-1, -1, -1], max: [1, 1, 1], mat: 0 };
+    const materials = [{ type: 1, attenuation: [1, 1, 1] }];
+    for (const [name, scene] of [
+        ['box geometry', { objects: Array(renderer.fields.Boxes.dimensions[0] + 1).fill(box), materials }],
+        ['expanded box lights', { objects: [box], lights: [box], materials }],
+    ]) {
+        let rejected = false;
+        let message = '';
+        try {
+            await renderer.loadScene(scene);
+        } catch (error) {
+            message = error.message;
+            rejected = /capacity/.test(error.message);
+        }
+        results.push({
+            name: `${name} capacity rejected before changing scene or counters`,
+            value: message,
+            pass:
+                rejected &&
+                JSON.stringify(before) === JSON.stringify(await renderer.fields.COUNTER.toArray()) &&
+                firstObject === JSON.stringify(await renderer.fields.Scene.get([0])),
+        });
+    }
     try {
         await renderer.loadScene({
             ...SCENE_LIST[0],

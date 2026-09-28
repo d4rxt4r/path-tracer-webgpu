@@ -1,6 +1,5 @@
 # TODO
-- Implement OBJ_TYPE.BOX
-- Fix constant medium render for box boundary 
+- Support arbitrary closed quad boundaries for constant media
 
 - Do not render back face of the quads
 - Loading scene anim
