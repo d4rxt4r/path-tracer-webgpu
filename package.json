@@ -6,16 +6,28 @@
     "lib": "lib"
   },
   "scripts": {
-    "start": "npx browser-sync --watch"
+    "start": "browser-sync start --server --watch --no-open",
+    "test": "node --import ./tests/browser-env.mjs --test tests/*.test.mjs",
+    "test:gpu": "node scripts/test-gpu.mjs",
+    "bench": "node scripts/bench.mjs",
+    "lint": "eslint app.js scenes.js const.js classes renderer scripts tests test.js",
+    "bench:functions": "node scripts/bench-functions.mjs"
   },
   "author": "dxr",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "browser-sync": "3.0.4",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "globals": "^15.9.0"
+    "globals": "^15.9.0",
+    "playwright": "1.63.0",
+    "prettier": "3.9.9"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22"
   }
 }

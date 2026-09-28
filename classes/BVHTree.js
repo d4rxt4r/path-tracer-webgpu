@@ -1,7 +1,7 @@
 import * as ti from '../lib/taichi.js';
 
 import { OBJ_TYPE } from '../const.js';
-import { AABB, get_aabb, get_aabb_points, get_longest_aabb_axis, get_aabb_bbox, get_aabb_centroid } from './AABB.js';
+import { AABB, get_aabb, get_aabb_bbox, get_aabb_centroid } from './AABB.js';
 import { get_interval_axis } from './Interval.js';
 import { get_sphere_aabb } from './Sphere.js';
 import { get_quad_bbox } from './Quad.js';
@@ -19,7 +19,7 @@ const compare_bvh_nodes = (a, b, axis_index) => {
     const a_axis_interval = get_interval_axis(a, axis_index);
     const b_axis_interval = get_interval_axis(b, axis_index);
 
-    return a_axis_interval.min < b_axis_interval.min;
+    return a_axis_interval.min - b_axis_interval.min;
 };
 
 class BVHBuilder {
@@ -32,6 +32,7 @@ class BVHBuilder {
     }
 
     build() {
+        if (this.#primitives.length === 0) return [];
         const rootIndex = this.#buildRecursive(0, this.#primitives.length, -1);
         this.setNextIndices(rootIndex, -1);
 
@@ -55,26 +56,30 @@ class BVHBuilder {
             // Leaf node
             this.#nodes[currentIndex].left_index = -1;
             this.#nodes[currentIndex].right_index = -1;
-            this.#nodes[currentIndex].primitive_index = start;
-            this.#nodes[currentIndex].bbox = this.#primitives[start];
+            this.#nodes[currentIndex].primitive_index = this.#primitives[start].index;
+            this.#nodes[currentIndex].bbox = this.#primitives[start].bbox;
             return currentIndex;
         }
 
         // Compute bounds of all primitives in this node
-        let centroid_bounds = null;
+        const min = [Infinity, Infinity, Infinity];
+        const max = [-Infinity, -Infinity, -Infinity];
         for (let i = start; i < end; i++) {
-            const centroid = get_aabb_centroid(this.#primitives[i]);
-            centroid_bounds = centroid_bounds
-                ? get_aabb_bbox(centroid_bounds, get_aabb_points(centroid, centroid))
-                : get_aabb_points(centroid, centroid);
+            const centroid = this.#primitives[i].centroid;
+            for (let axis = 0; axis < 3; axis++) {
+                min[axis] = Math.min(min[axis], centroid[axis]);
+                max[axis] = Math.max(max[axis], centroid[axis]);
+            }
         }
-
-        const axis = get_longest_aabb_axis(centroid_bounds);
+        let axis = 0;
+        if (max[1] - min[1] > max[axis] - min[axis]) axis = 1;
+        if (max[2] - min[2] > max[axis] - min[axis]) axis = 2;
 
         // Sort primitives based on the centroid of their bounding boxes
-        this.#primitives.slice(start, end).sort((a, b) => {
-            return get_aabb_centroid(a)[axis] - get_aabb_centroid(b)[axis];
+        const sorted = this.#primitives.slice(start, end).sort((a, b) => {
+            return a.centroid[axis] - b.centroid[axis];
         });
+        for (let i = 0; i < sorted.length; i++) this.#primitives[start + i] = sorted[i];
 
         const mid = start + Math.floor(numPrimitives / 2);
 
@@ -109,7 +114,7 @@ class BVHBuilder {
  * @param {import("./Hittable.js").THittable[]} obj_list
  */
 function build_bvh_from_obj(obj_list) {
-    const primitives = obj_list.map((obj) => {
+    const primitives = obj_list.map((obj, index) => {
         let bbox = null;
         if (obj.type === OBJ_TYPE.SPHERE) {
             bbox = get_sphere_aabb(obj);
@@ -120,7 +125,8 @@ function build_bvh_from_obj(obj_list) {
         if (obj.type === OBJ_TYPE.MEDIUM) {
             bbox = obj.radius > 0 ? get_sphere_aabb(obj) : get_quad_bbox(obj);
         }
-        return bbox;
+        if (!bbox) throw new Error(`Unsupported object type: ${obj.type}`);
+        return { bbox, index, centroid: get_aabb_centroid(bbox) };
     });
 
     const builder = new BVHBuilder(primitives);

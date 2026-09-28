@@ -23,9 +23,9 @@ const delta = 0.0001;
  * @returns {TAABB}
  */
 const pad_to_minimums_aabb = (aabb) => {
-    aabb.x = interval_expand(aabb.x, delta);
-    aabb.y = interval_expand(aabb.y, delta);
-    aabb.z = interval_expand(aabb.z, delta);
+    if (interval_size(aabb.x) < delta) aabb.x = interval_expand(aabb.x, delta - interval_size(aabb.x));
+    if (interval_size(aabb.y) < delta) aabb.y = interval_expand(aabb.y, delta - interval_size(aabb.y));
+    if (interval_size(aabb.z) < delta) aabb.z = interval_expand(aabb.z, delta - interval_size(aabb.z));
     return aabb;
 };
 
@@ -124,29 +124,15 @@ const hit_aabb = (r, ray_t, aabb) => {
     for (let axis of ti.Static(ti.range(3))) {
         const ax = get_aabb_axis(aabb, axis);
 
-        const adinv = 1.0 / ray_dir[axis];
-
-        const t0 = (ax.min - ray_orig[axis]) * adinv;
-        const t1 = (ax.max - ray_orig[axis]) * adinv;
-
-        let min = ray_t.min;
-        let max = ray_t.max;
-
-        if (t0 < t1) {
-            if (t0 > ray_t.min) min = t0;
-            if (t1 < ray_t.max) max = t1;
+        if (ray_dir[axis] === 0) {
+            if (ray_orig[axis] < ax.min || ray_orig[axis] > ax.max) res = false;
         } else {
-            if (t1 > ray_t.min) min = t1;
-            if (t0 < ray_t.max) max = t0;
-        }
-
-        if (max <= min) {
-            res = false;
-        }
-
-        if (res) {
-            ray_t.min = min;
-            ray_t.max = max;
+            const adinv = 1.0 / ray_dir[axis];
+            const t0 = (ax.min - ray_orig[axis]) * adinv;
+            const t1 = (ax.max - ray_orig[axis]) * adinv;
+            ray_t.min = ti.max(ray_t.min, ti.min(t0, t1));
+            ray_t.max = ti.min(ray_t.max, ti.max(t0, t1));
+            if (ray_t.max < ray_t.min) res = false;
         }
     }
 
@@ -154,7 +140,7 @@ const hit_aabb = (r, ray_t, aabb) => {
 };
 
 const translate_aabb = (aabb, offset) => {
-    if (!offset) {
+    if (!offset || offset.every((value) => value === 0)) {
         return aabb;
     }
 
@@ -170,7 +156,7 @@ const translate_aabb = (aabb, offset) => {
  * @param {import('./Vector.js').vec3} rotation
  */
 const rotate_aabb = (aabb, rotation) => {
-    if (!rotation) {
+    if (!rotation || rotation.every((value) => value === 0)) {
         return aabb;
     }
 

@@ -25,6 +25,7 @@ const generate_obj_pdf = (obj, origin, r_time) => {
 };
 
 const mixed_pdf_value = (r_in, mat, rec, r_out, lights_weight) => {
+    if (COUNTER[1] === 0) lights_weight = 0;
     const lights_pdf = lights_pdf_value(rec.p, r_out, r_in.time);
 
     let material_pdf = 0.0;
@@ -38,8 +39,9 @@ const mixed_pdf_value = (r_in, mat, rec, r_out, lights_weight) => {
 };
 
 const mixed_pdf_generate = (r, mat, rec, lights_weight) => {
+    if (COUNTER[1] === 0) lights_weight = 0;
     let pdf_direction = [0.0, 0.0, 0.0];
-    if (ti.random() <= lights_weight) {
+    if (lights_weight > 0 && ti.random() < lights_weight) {
         pdf_direction = generate_lights_pdf(rec.p, r.time);
     } else if (mat.type === MAT_TYPE.LAMBERTIAN) {
         pdf_direction = cosine_pdf_generate(rec.normal);
@@ -50,7 +52,8 @@ const mixed_pdf_generate = (r, mat, rec, lights_weight) => {
 };
 
 const lights_pdf_value = (origin, direction, r_time) => {
-    const weight = 1.0 / COUNTER[1];
+    let weight = 0.0;
+    if (COUNTER[1] > 0) weight = 1.0 / COUNTER[1];
     let sum = 0.0;
 
     for (let i of ti.range(COUNTER[1])) {
@@ -60,7 +63,7 @@ const lights_pdf_value = (origin, direction, r_time) => {
     return sum;
 };
 const generate_lights_pdf = (origin, r_time) => {
-    const rand_int = random_i32(0, COUNTER[1] - 1);
+    const rand_int = ti.min(random_i32(0, COUNTER[1] - 1), COUNTER[1] - 1);
     const rand_obj = Lights[rand_int];
 
     return generate_obj_pdf(rand_obj, origin, r_time);
@@ -68,12 +71,17 @@ const generate_lights_pdf = (origin, r_time) => {
 
 const sphere_pdf_value = (obj, origin, direction, r_time) => {
     const rec = new_hit_record();
-    let res = 1.0;
-    if (hit_sphere(obj, new_ray(origin, direction, r_time), get_interval(0.001, MAX_F32), rec)) {
+    let res = 0.0;
+    const sphere_center = get_sphere_center(obj.center, obj.center2, r_time);
+    if ((sphere_center - origin).normSqr() <= obj.radius * obj.radius) {
+        res = 1 / (4 * Math.PI);
+    } else if (hit_sphere(obj, new_ray(origin, direction, r_time), get_interval(0.001, MAX_F32), rec)) {
         const center = get_sphere_center(obj.center, obj.center2, r_time);
         const dist_squared = (center - origin).normSqr();
-        const cos_theta_max = Math.sqrt(1 - (obj.radius * obj.radius) / dist_squared);
-        const solid_angle = 2 * Math.PI * (1 - cos_theta_max);
+        const ratio = (obj.radius * obj.radius) / dist_squared;
+        const cos_theta_max = Math.sqrt(1 - ratio);
+        // Rationalized form avoids cancellation when the light subtends a tiny angle.
+        const solid_angle = (2 * Math.PI * ratio) / (1 + cos_theta_max);
         res = 1 / solid_angle;
     }
     return res;
@@ -82,8 +90,13 @@ const sphere_pdf_generate = (obj, origin, r_time) => {
     const center = get_sphere_center(obj.center, obj.center2, r_time);
     const direction = center - origin;
     const distance_squared = direction.normSqr();
-    const uvw = new_onb(direction);
-    return transform_onb(uvw, random_to_sphere(obj.radius, distance_squared));
+    let generated = [0.0, 0.0, 0.0];
+    if (distance_squared <= obj.radius * obj.radius) generated = random_unit_vec3();
+    else {
+        const uvw = new_onb(direction);
+        generated = transform_onb(uvw, random_to_sphere(obj.radius, distance_squared));
+    }
+    return generated;
 };
 
 const quad_pdf_value = (obj, origin, direction) => {
@@ -92,8 +105,8 @@ const quad_pdf_value = (obj, origin, direction) => {
     if (hit_quad(obj, new_ray(origin, direction, 0), get_interval(0.001, MAX_F32), rec)) {
         const distance_squared = rec.t * rec.t * direction.normSqr();
         const cosine = ti.abs(ti.dot(direction, rec.normal) / direction.norm());
-        const area = ti.norm(ti.cross(obj.u, obj.v));
-        res = distance_squared / (cosine * area) - 1;
+        const area = obj.area;
+        res = distance_squared / (cosine * area);
     }
     return res;
 };
@@ -106,8 +119,7 @@ const unit_sphere_pdf_value = () => 1 / (4 * Math.PI);
 const unit_sphere_pdf_generate = () => random_unit_vec3();
 
 const cosine_pdf_value = (w, direction) => {
-    const uvw = new_onb(w);
-    const cosine_theta = ti.dot(ti.normalized(direction), uvw.w);
+    const cosine_theta = ti.dot(ti.normalized(direction), w);
     return ti.max(0, cosine_theta / Math.PI);
 };
 const cosine_pdf_generate = (w) => {

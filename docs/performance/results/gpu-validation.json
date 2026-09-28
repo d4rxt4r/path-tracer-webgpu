@@ -1,0 +1,1016 @@
+{
+  "currentRevision": "24ad391560c1584a0c56096ae3f51488bc9877ee",
+  "workingTreeDirty": true,
+  "firstPartySha256NormalizedLF": "39127b78d3651ffe7ae40f6f482df2b428cc925a7cae427293985c31c75e5800",
+  "adapter": {
+    "vendor": "intel",
+    "architecture": "gen-12lp",
+    "fallback": false
+  },
+  "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "results": [
+    {
+      "name": "sphere light PDF is zero for a miss",
+      "value": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "quad solid-angle PDF at normal incidence",
+      "value": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "sphere PDF from inside is uniform",
+      "value": 0.07957746833562851,
+      "expected": 0.07957747154594767,
+      "pass": true
+    },
+    {
+      "name": "distant sphere PDF stays finite",
+      "value": 3183098624,
+      "expected": 3183098861.837907,
+      "pass": true
+    },
+    {
+      "name": "negative endpoint interpolation 0",
+      "value": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "negative endpoint interpolation 1",
+      "value": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "negative endpoint interpolation 2",
+      "value": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "parallel ray on AABB face hits",
+      "value": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "parallel ray outside AABB misses",
+      "value": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "zero-sum translation still moves an object",
+      "value": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "translated sphere distance",
+      "value": 2,
+      "expected": 2,
+      "pass": true
+    },
+    {
+      "name": "rotated quad world-space intersection",
+      "value": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "rotated quad world-space normal",
+      "value": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "name": "quad scalar U coordinate",
+      "value": 0.5,
+      "expected": 0.5,
+      "pass": true
+    },
+    {
+      "name": "quad scalar V coordinate",
+      "value": 0.5,
+      "expected": 0.5,
+      "pass": true
+    },
+    {
+      "name": "moving sphere BVH covers the complete trajectory",
+      "value": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "name": "empty GPU scene misses",
+      "value": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "no-light scene falls back to material sampling",
+      "value": 0.11408888548612595,
+      "pass": true
+    },
+    {
+      "name": "medium hit probability for unit ray",
+      "value": 0.8609619140625,
+      "expected": 0.8646647167633873,
+      "pass": true
+    },
+    {
+      "name": "medium hit probability is invariant to direction magnitude",
+      "value": 0.8587646484375,
+      "expected": 0.8646647167633873,
+      "pass": true
+    },
+    {
+      "name": "uniform sphere light sampling mean",
+      "value": 0.00018708924236321423,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "name": "cosine hemisphere sampling mean",
+      "value": 0.6684256052465685,
+      "expected": 0.6666666666666666,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 0",
+      "value": 9,
+      "expected": 9,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 0",
+      "value": 9,
+      "expected": 9,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 1",
+      "value": 10,
+      "expected": 10,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 1",
+      "value": 10,
+      "expected": 10,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 2",
+      "value": 11,
+      "expected": 11,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 2",
+      "value": 11,
+      "expected": 11,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 3",
+      "value": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 3",
+      "value": 12,
+      "expected": 12,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 4",
+      "value": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 4",
+      "value": 13,
+      "expected": 13,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 5",
+      "value": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 5",
+      "value": 14,
+      "expected": 14,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 6",
+      "value": 15,
+      "expected": 15,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 6",
+      "value": 15,
+      "expected": 15,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 7",
+      "value": 16,
+      "expected": 16,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 7",
+      "value": 16,
+      "expected": 16,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 8",
+      "value": 17,
+      "expected": 17,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 8",
+      "value": 17,
+      "expected": 17,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 9",
+      "value": 18,
+      "expected": 18,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 9",
+      "value": 18,
+      "expected": 18,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 10",
+      "value": 19,
+      "expected": 19,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 10",
+      "value": 19,
+      "expected": 19,
+      "pass": true
+    },
+    {
+      "name": "BVH nearest hit 11",
+      "value": 20,
+      "expected": 20,
+      "pass": true
+    },
+    {
+      "name": "linear nearest hit 11",
+      "value": 20,
+      "expected": 20,
+      "pass": true
+    },
+    {
+      "name": "finite hardware render: Test Scene",
+      "pass": true,
+      "timings": {
+        "prepareMs": 2.600000023841858,
+        "uploadMs": 940
+      }
+    },
+    {
+      "name": "finite hardware render: Bouncing Spheres",
+      "pass": true,
+      "timings": {
+        "prepareMs": 8,
+        "uploadMs": 43.20000001788139
+      }
+    },
+    {
+      "name": "finite hardware render: Perlin Noise (WIP)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.30000001192092896,
+        "uploadMs": 53.19999998807907
+      }
+    },
+    {
+      "name": "finite hardware render: Quads Test",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.29999998211860657,
+        "uploadMs": 41.400000005960464
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.5999999940395355,
+        "uploadMs": 48.29999998211861
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box (Mirror Test)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.20000001788139343,
+        "uploadMs": 35.29999998211861
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box (Glass Test)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.19999998807907104,
+        "uploadMs": 41.70000001788139
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box (Stress Test)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.30000001192092896,
+        "uploadMs": 38.19999998807907
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box (Fog Test)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.30000001192092896,
+        "uploadMs": 36.099999994039536
+      }
+    },
+    {
+      "name": "rapid scene changes render only the latest state and stop at SPP",
+      "pass": true
+    },
+    {
+      "name": "oversized scene rejected before changing GPU counters",
+      "pass": true
+    },
+    {
+      "name": "zero samples rejected",
+      "pass": true
+    },
+    {
+      "name": "reloading a changed scene updates GPU geometry",
+      "pass": true
+    },
+    {
+      "name": "finite hardware render: Test Scene",
+      "pass": true,
+      "timings": {
+        "prepareMs": 1.9000000059604645,
+        "uploadMs": 912.9000000059605
+      }
+    },
+    {
+      "name": "finite hardware render: Bouncing Spheres",
+      "pass": true,
+      "timings": {
+        "prepareMs": 7.5,
+        "uploadMs": 45.900000005960464
+      }
+    },
+    {
+      "name": "finite hardware render: Perlin Noise (WIP)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.30000001192092896,
+        "uploadMs": 58.5
+      }
+    },
+    {
+      "name": "finite hardware render: Quads Test",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.29999998211860657,
+        "uploadMs": 40.20000001788139
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.30000001192092896,
+        "uploadMs": 55.099999994039536
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box (Mirror Test)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.20000001788139343,
+        "uploadMs": 39.5
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box (Glass Test)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.30000001192092896,
+        "uploadMs": 43.39999997615814
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box (Stress Test)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.30000001192092896,
+        "uploadMs": 38.900000005960464
+      }
+    },
+    {
+      "name": "finite hardware render: Cornell Box (Fog Test)",
+      "pass": true,
+      "timings": {
+        "prepareMs": 0.19999998807907104,
+        "uploadMs": 40.19999998807907
+      }
+    },
+    {
+      "name": "rapid scene changes render only the latest state and stop at SPP",
+      "pass": true
+    },
+    {
+      "name": "oversized scene rejected before changing GPU counters",
+      "pass": true
+    },
+    {
+      "name": "zero samples rejected",
+      "pass": true
+    },
+    {
+      "name": "reloading a changed scene updates GPU geometry",
+      "pass": true
+    },
+    {
+      "name": "fused/separate radiance agrees across three independent accumulations",
+      "pass": true,
+      "value": "{\"fusedMeans\":[0.07421909253801057,0.07435066593473803,0.0740234436664544],\"separateMeans\":[0.07421909253801057,0.07435066593473803,0.0740234436664544]}"
+    },
+    {
+      "name": "hardware scene with 2000 primitives and 3999 BVH nodes",
+      "pass": true,
+      "timings": {
+        "prepareMs": 34.5,
+        "uploadMs": 896.1999999880791
+      },
+      "width": 160,
+      "height": 90,
+      "maxDepth": 2,
+      "warmup": 5,
+      "samples": 50,
+      "medianMs": 7.799999982118607,
+      "p95Ms": 10,
+      "frameTimes": [
+        5.199999988079071,
+        6.5,
+        8.200000017881393,
+        7.799999982118607,
+        13,
+        5.9000000059604645,
+        7.700000017881393,
+        7.199999988079071,
+        9.400000005960464,
+        7.5999999940395355,
+        8.300000011920929,
+        8.199999988079071,
+        10.099999994039536,
+        6.5,
+        9.300000011920929,
+        7.4000000059604645,
+        9.099999994039536,
+        7.5,
+        9,
+        7.5999999940395355,
+        8.099999994039536,
+        7.9000000059604645,
+        6.0999999940395355,
+        8.400000005960464,
+        8.5,
+        8.5,
+        8.300000011920929,
+        9,
+        6.5,
+        7.0999999940395355,
+        4.799999982118607,
+        7.0999999940395355,
+        8.599999994039536,
+        10,
+        7.199999988079071,
+        6.200000017881393,
+        8.599999994039536,
+        6.5,
+        7.699999988079071,
+        9.5,
+        7.800000011920929,
+        5.5999999940395355,
+        8.700000017881393,
+        6.5999999940395355,
+        6.9000000059604645,
+        7.5,
+        7.5,
+        7.5999999940395355,
+        8.5,
+        8.5
+      ],
+      "reloadTimes": [
+        {
+          "prepareMs": 22.599999994039536,
+          "uploadMs": 94.2000000178814
+        },
+        {
+          "prepareMs": 31.900000005960464,
+          "uploadMs": 95.2999999821186
+        },
+        {
+          "prepareMs": 12.5,
+          "uploadMs": 112.5
+        },
+        {
+          "prepareMs": 10.099999994039536,
+          "uploadMs": 87
+        },
+        {
+          "prepareMs": 11,
+          "uploadMs": 114.60000002384186
+        },
+        {
+          "prepareMs": 8.199999988079071,
+          "uploadMs": 88.30000001192093
+        },
+        {
+          "prepareMs": 5.5,
+          "uploadMs": 118.19999998807907
+        },
+        {
+          "prepareMs": 5.800000011920929,
+          "uploadMs": 90.19999998807907
+        },
+        {
+          "prepareMs": 5.5,
+          "uploadMs": 93.5
+        },
+        {
+          "prepareMs": 5.5999999940395355,
+          "uploadMs": 83.80000001192093
+        },
+        {
+          "prepareMs": 4.799999982118607,
+          "uploadMs": 87.30000001192093
+        },
+        {
+          "prepareMs": 4.5999999940395355,
+          "uploadMs": 101.80000001192093
+        },
+        {
+          "prepareMs": 16.19999998807907,
+          "uploadMs": 98.40000000596046
+        },
+        {
+          "prepareMs": 4.0999999940395355,
+          "uploadMs": 93.5
+        },
+        {
+          "prepareMs": 4.300000011920929,
+          "uploadMs": 105.69999998807907
+        },
+        {
+          "prepareMs": 7.200000017881393,
+          "uploadMs": 115.19999998807907
+        },
+        {
+          "prepareMs": 5.699999988079071,
+          "uploadMs": 87
+        },
+        {
+          "prepareMs": 4.799999982118607,
+          "uploadMs": 82.2000000178814
+        },
+        {
+          "prepareMs": 4.799999982118607,
+          "uploadMs": 92.40000000596046
+        },
+        {
+          "prepareMs": 7.300000011920929,
+          "uploadMs": 96.59999999403954
+        },
+        {
+          "prepareMs": 3.7999999821186066,
+          "uploadMs": 82.60000002384186
+        },
+        {
+          "prepareMs": 3.899999976158142,
+          "uploadMs": 86.7000000178814
+        },
+        {
+          "prepareMs": 6,
+          "uploadMs": 98.19999998807907
+        },
+        {
+          "prepareMs": 5.5,
+          "uploadMs": 81.09999999403954
+        },
+        {
+          "prepareMs": 4.4000000059604645,
+          "uploadMs": 96
+        },
+        {
+          "prepareMs": 6.700000017881393,
+          "uploadMs": 90.69999998807907
+        },
+        {
+          "prepareMs": 5.200000017881393,
+          "uploadMs": 80.69999998807907
+        },
+        {
+          "prepareMs": 6.300000011920929,
+          "uploadMs": 81.39999997615814
+        },
+        {
+          "prepareMs": 4,
+          "uploadMs": 84
+        },
+        {
+          "prepareMs": 4.600000023841858,
+          "uploadMs": 91
+        },
+        {
+          "prepareMs": 5.0999999940395355,
+          "uploadMs": 92.19999998807907
+        },
+        {
+          "prepareMs": 5.0999999940395355,
+          "uploadMs": 83.5
+        },
+        {
+          "prepareMs": 5.399999976158142,
+          "uploadMs": 101.30000001192093
+        },
+        {
+          "prepareMs": 6,
+          "uploadMs": 90.40000000596046
+        },
+        {
+          "prepareMs": 4.300000011920929,
+          "uploadMs": 83.59999999403954
+        },
+        {
+          "prepareMs": 4.0999999940395355,
+          "uploadMs": 83.09999999403954
+        },
+        {
+          "prepareMs": 3.9000000059604645,
+          "uploadMs": 78.90000000596046
+        },
+        {
+          "prepareMs": 6,
+          "uploadMs": 82.69999998807907
+        },
+        {
+          "prepareMs": 3.5999999940395355,
+          "uploadMs": 83.5
+        },
+        {
+          "prepareMs": 4.5,
+          "uploadMs": 80.10000002384186
+        },
+        {
+          "prepareMs": 4.0999999940395355,
+          "uploadMs": 76.5
+        },
+        {
+          "prepareMs": 4.800000011920929,
+          "uploadMs": 81.09999999403954
+        },
+        {
+          "prepareMs": 5.0999999940395355,
+          "uploadMs": 80
+        },
+        {
+          "prepareMs": 4.800000011920929,
+          "uploadMs": 91.89999997615814
+        },
+        {
+          "prepareMs": 5.9000000059604645,
+          "uploadMs": 86.90000000596046
+        },
+        {
+          "prepareMs": 3.800000011920929,
+          "uploadMs": 80.69999998807907
+        },
+        {
+          "prepareMs": 3.5999999940395355,
+          "uploadMs": 77.80000001192093
+        },
+        {
+          "prepareMs": 3.7999999821186066,
+          "uploadMs": 80.40000000596046
+        },
+        {
+          "prepareMs": 5.300000011920929,
+          "uploadMs": 80.19999998807907
+        },
+        {
+          "prepareMs": 3.5,
+          "uploadMs": 81.60000002384186
+        }
+      ]
+    },
+    {
+      "name": "hardware scene with 10000 primitives and 19999 BVH nodes",
+      "pass": true,
+      "timings": {
+        "prepareMs": 110.30000001192093,
+        "uploadMs": 1314.2999999821186
+      },
+      "width": 160,
+      "height": 90,
+      "maxDepth": 2,
+      "warmup": 5,
+      "samples": 50,
+      "medianMs": 9.300000011920929,
+      "p95Ms": 12,
+      "frameTimes": [
+        4.699999988079071,
+        10.300000011920929,
+        9.299999982118607,
+        11.800000011920929,
+        12,
+        12.299999982118607,
+        9.800000011920929,
+        9.300000011920929,
+        8.299999982118607,
+        11.099999994039536,
+        10.5,
+        12.300000011920929,
+        9.099999994039536,
+        9.599999994039536,
+        10.799999982118607,
+        11.200000017881393,
+        9.199999988079071,
+        9.900000005960464,
+        10,
+        11.199999988079071,
+        10.5,
+        10.400000005960464,
+        11.099999994039536,
+        11.5,
+        8.099999994039536,
+        10.200000017881393,
+        5.4000000059604645,
+        9.799999982118607,
+        6.0999999940395355,
+        7.4000000059604645,
+        7.200000017881393,
+        6.799999982118607,
+        9.300000011920929,
+        7.5,
+        11.799999982118607,
+        6.9000000059604645,
+        4.5999999940395355,
+        6,
+        4.9000000059604645,
+        8.400000005960464,
+        7.199999988079071,
+        10.100000023841858,
+        4.899999976158142,
+        6.800000011920929,
+        5.5,
+        5.199999988079071,
+        7.9000000059604645,
+        5.700000017881393,
+        7,
+        10.099999994039536
+      ],
+      "reloadTimes": [
+        {
+          "prepareMs": 53.10000002384186,
+          "uploadMs": 320.69999998807907
+        },
+        {
+          "prepareMs": 51.19999998807907,
+          "uploadMs": 361.60000002384186
+        },
+        {
+          "prepareMs": 28,
+          "uploadMs": 343.2999999821186
+        },
+        {
+          "prepareMs": 24.200000017881393,
+          "uploadMs": 353
+        },
+        {
+          "prepareMs": 43.5,
+          "uploadMs": 362.2999999821186
+        },
+        {
+          "prepareMs": 26.900000005960464,
+          "uploadMs": 368.80000001192093
+        },
+        {
+          "prepareMs": 42.099999994039536,
+          "uploadMs": 442.69999998807907
+        },
+        {
+          "prepareMs": 41.70000001788139,
+          "uploadMs": 471
+        },
+        {
+          "prepareMs": 37.099999994039536,
+          "uploadMs": 378.09999999403954
+        },
+        {
+          "prepareMs": 32.80000001192093,
+          "uploadMs": 360.2999999821186
+        },
+        {
+          "prepareMs": 38.80000001192093,
+          "uploadMs": 435.09999999403954
+        },
+        {
+          "prepareMs": 47.30000001192093,
+          "uploadMs": 562.8000000119209
+        },
+        {
+          "prepareMs": 43.89999997615814,
+          "uploadMs": 570
+        },
+        {
+          "prepareMs": 50.400000005960464,
+          "uploadMs": 543.0999999940395
+        },
+        {
+          "prepareMs": 48,
+          "uploadMs": 548.3000000119209
+        },
+        {
+          "prepareMs": 46.599999994039536,
+          "uploadMs": 542.4000000059605
+        },
+        {
+          "prepareMs": 44,
+          "uploadMs": 551.0999999940395
+        },
+        {
+          "prepareMs": 46,
+          "uploadMs": 574.1000000238419
+        },
+        {
+          "prepareMs": 50.89999997615814,
+          "uploadMs": 538.4000000059605
+        },
+        {
+          "prepareMs": 48.30000001192093,
+          "uploadMs": 551.4000000059605
+        },
+        {
+          "prepareMs": 45.79999998211861,
+          "uploadMs": 542.8000000119209
+        },
+        {
+          "prepareMs": 46,
+          "uploadMs": 549.9000000059605
+        },
+        {
+          "prepareMs": 46.29999998211861,
+          "uploadMs": 521.2000000178814
+        },
+        {
+          "prepareMs": 36.5,
+          "uploadMs": 529.5999999940395
+        },
+        {
+          "prepareMs": 47.900000005960464,
+          "uploadMs": 567.0999999940395
+        },
+        {
+          "prepareMs": 47.900000005960464,
+          "uploadMs": 565.6999999880791
+        },
+        {
+          "prepareMs": 51.900000005960464,
+          "uploadMs": 613.4000000059605
+        },
+        {
+          "prepareMs": 55.69999998807907,
+          "uploadMs": 515.3000000119209
+        },
+        {
+          "prepareMs": 45.099999994039536,
+          "uploadMs": 512.8000000119209
+        },
+        {
+          "prepareMs": 45,
+          "uploadMs": 467.2999999821186
+        },
+        {
+          "prepareMs": 43.20000001788139,
+          "uploadMs": 494.89999997615814
+        },
+        {
+          "prepareMs": 47.80000001192093,
+          "uploadMs": 518.6999999880791
+        },
+        {
+          "prepareMs": 39.5,
+          "uploadMs": 505
+        },
+        {
+          "prepareMs": 40.70000001788139,
+          "uploadMs": 504.40000000596046
+        },
+        {
+          "prepareMs": 42.79999998211861,
+          "uploadMs": 514.5
+        },
+        {
+          "prepareMs": 45.30000001192093,
+          "uploadMs": 542.2999999821186
+        },
+        {
+          "prepareMs": 52.69999998807907,
+          "uploadMs": 491.40000000596046
+        },
+        {
+          "prepareMs": 41.29999998211861,
+          "uploadMs": 464
+        },
+        {
+          "prepareMs": 39.70000001788139,
+          "uploadMs": 466.59999999403954
+        },
+        {
+          "prepareMs": 40.599999994039536,
+          "uploadMs": 495.80000001192093
+        },
+        {
+          "prepareMs": 45.400000005960464,
+          "uploadMs": 527.1999999880791
+        },
+        {
+          "prepareMs": 46.5,
+          "uploadMs": 492.69999998807907
+        },
+        {
+          "prepareMs": 44.5,
+          "uploadMs": 524.2000000178814
+        },
+        {
+          "prepareMs": 45,
+          "uploadMs": 494
+        },
+        {
+          "prepareMs": 40.19999998807907,
+          "uploadMs": 468.59999999403954
+        },
+        {
+          "prepareMs": 40.30000001192093,
+          "uploadMs": 501.69999998807907
+        },
+        {
+          "prepareMs": 43.80000001192093,
+          "uploadMs": 465.59999999403954
+        },
+        {
+          "prepareMs": 42,
+          "uploadMs": 527.3000000119209
+        },
+        {
+          "prepareMs": 43.5,
+          "uploadMs": 518.8000000119209
+        },
+        {
+          "prepareMs": 45,
+          "uploadMs": 551.5999999940395
+        }
+      ]
+    },
+    {
+      "name": "native application controls switch scenes and recover from invalid camera settings",
+      "pass": true,
+      "value": ""
+    },
+    {
+      "name": "unsupported WebGPU shows a clear application error",
+      "pass": true
+    }
+  ]
+}

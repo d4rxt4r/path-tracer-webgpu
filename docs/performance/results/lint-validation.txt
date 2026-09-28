@@ -1,0 +1,3 @@
+
+> js-webgpu-pathtracer@1.0.0 lint
+> eslint app.js scenes.js const.js classes renderer scripts tests test.js

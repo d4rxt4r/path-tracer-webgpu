@@ -3,13 +3,12 @@ import * as ti from '../lib/taichi.js';
 /**
  * @typedef HitRecord
  * @property {import("./Vector.js").vec3} p
- * @property {import("./Vector.js").vec3} rotation
- * @property {import("./Vector.js").vec3} rot
+ * @property {import("./Vector.js").vec3} normal
  * @property {number} mat
  * @property {number} t
  * @property {boolean} front_face
- * @property {import("./Vector.js").vec3} u
- * @property {import("./Vector.js").vec3} v
+ * @property {number} u
+ * @property {number} v
  */
 
 const new_hit_record = () => {
@@ -25,8 +24,8 @@ const new_hit_record = () => {
         // material
         mat: -1,
         // texture coordinates
-        u: [0.0, 0.0, 0.0],
-        v: [0.0, 0.0, 0.0],
+        u: 0.0,
+        v: 0.0,
     };
 };
 
@@ -62,16 +61,16 @@ const set_face_normal = (rec, r, outward_normal) => {
 
 const Hittable = ti.types.struct({
     type: ti.i32,
-    // offset
-    offset: ti.types.vector(ti.f32, 3),
-    // rotation
-    rotation: ti.types.vector(ti.i32, 3),
     // material
     mat: ti.i32,
     // quad
     Q: ti.types.vector(ti.f32, 3),
     u: ti.types.vector(ti.f32, 3),
     v: ti.types.vector(ti.f32, 3),
+    normal: ti.types.vector(ti.f32, 3),
+    plane_d: ti.f32,
+    quad_w: ti.types.vector(ti.f32, 3),
+    area: ti.f32,
     // sphere
     radius: ti.f32,
     center: ti.types.vector(ti.f32, 3),

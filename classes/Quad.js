@@ -78,8 +78,8 @@ const quad_is_interior = (a, b, rec) => {
 };
 
 const hit_quad = (quad, r, ray_t, rec) => {
-    const normal = get_quad_normal(quad.u, quad.v);
-    const D = get_quad_d(quad.Q, normal);
+    const normal = quad.normal;
+    const D = quad.plane_d;
     const denom = ti.dot(normal, r.direction);
 
     let res = true;
@@ -101,7 +101,7 @@ const hit_quad = (quad, r, ray_t, rec) => {
             // Determine if the hit point lies within the planar shape using its plane coordinates.
             const intersection = ray_at(r, t);
             const planar_hitpt_vector = intersection - quad.Q;
-            const w = get_quad_w(ti.cross(quad.u, quad.v));
+            const w = quad.quad_w;
             const alpha = ti.dot(w, ti.cross(planar_hitpt_vector, quad.v));
             const beta = ti.dot(w, ti.cross(quad.u, planar_hitpt_vector));
 

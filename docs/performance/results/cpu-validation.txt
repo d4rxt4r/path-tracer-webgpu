@@ -1,0 +1,28 @@
+﻿
+> js-webgpu-pathtracer@1.0.0 test
+> node --import ./tests/browser-env.mjs --test tests/*.test.mjs
+
+✔ camera pointing straight up still has a nonzero horizontal pixel step (2.1225ms)
+✔ degenerate camera is rejected instead of submitting zero-direction rays (0.9193ms)
+✔ empty scene produces an empty BVH (3.2984ms)
+✔ BVH separates distant clusters and preserves original object indices (2.3588ms)
+✔ moving sphere bounds include a negative-coordinate endpoint (0.444ms)
+✔ AABB padding does not grow nondegenerate geometry (0.566ms)
+✔ background accepts both preset RGB arrays and GUI hex colors (0.8101ms)
+✔ default animation scheduling calls browser methods with the global receiver (4.1324ms)
+✔ new scene waits for an in-flight sample and discards its completion notification (8.7652ms)
+✔ render failure stops the loop and is reported once (2.7121ms)
+✔ a stale frame failure does not cancel a newer scene request (5.8967ms)
+✔ static sphere defaults to the same endpoint, not the world origin (4.0274ms)
+✔ capacities include 2N-1 BVH nodes and the fallback texture (1.1463ms)
+✔ invalid references and unsupported geometry fail before GPU upload (1.4924ms)
+✔ empty scenes still have valid upload defaults (0.3604ms)
+✔ preparation transforms geometry and lights into the same world coordinates (1.0725ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1221.6244

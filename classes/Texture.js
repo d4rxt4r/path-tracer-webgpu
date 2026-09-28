@@ -1,8 +1,10 @@
+import { texture_defaults } from '../renderer/SceneData.js';
+import { upload_records } from '../renderer/Upload.js';
 /* global Textures */
 
 import * as ti from '../lib/taichi.js';
 
-import { get_record_from_struct, TEX_TYPE } from '../const.js';
+import { TEX_TYPE } from '../const.js';
 
 /**
  * @typedef TTexture
@@ -19,14 +21,12 @@ const Texture = ti.types.struct({
     color2: ti.types.vector(ti.f32, 3),
 });
 
-const base_tex = get_record_from_struct(Texture);
-
 const init_textures = async (tex_list = [], world_textures) => {
-    await world_textures.set([0], { ...base_tex, type: TEX_TYPE.CHECKER, color: [0.0, 0.0, 0.0], color2: [1.0, 0.0, 1.0] });
-
-    for (let i = 1; i <= tex_list.length; i++) {
-        await world_textures.set([i], { ...base_tex, ...tex_list[i - 1] });
-    }
+    const records = [
+        { ...texture_defaults, type: TEX_TYPE.CHECKER, color2: [1.0, 0.0, 1.0] },
+        ...tex_list.map((tex) => ({ ...texture_defaults, ...tex })),
+    ];
+    await upload_records(world_textures, records, texture_defaults);
 };
 
 const texture_color_value = (tex_index, u, v, p) => {
@@ -34,11 +34,11 @@ const texture_color_value = (tex_index, u, v, p) => {
     const tex = Textures[tex_index];
 
     if (tex.type === TEX_TYPE.SOLID) {
-        res = get_solid_texture_value(tex_index);
+        res = tex.color;
     }
 
     if (tex.type === TEX_TYPE.CHECKER) {
-        res = get_checker_texture_value(tex_index, p);
+        res = get_checker_texture_value(tex, p);
     }
 
     return res;
@@ -61,8 +61,7 @@ const checker_texture = (color1, color2) => {
         color2,
     };
 };
-const get_checker_texture_value = (tex_index, p) => {
-    const tex = Textures[tex_index];
+const get_checker_texture_value = (tex, p) => {
     const inv_scale = 1.0 / tex.k;
 
     const xInteger = ti.i32(ti.floor(inv_scale * p.x));
@@ -73,7 +72,7 @@ const get_checker_texture_value = (tex_index, p) => {
 
     let res = tex.color2;
     if (isEven) {
-        res = Textures[tex_index].color;
+        res = tex.color;
     }
     return res;
 };

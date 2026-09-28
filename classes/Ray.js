@@ -110,9 +110,9 @@ const ray_color = (r, camera_settings) => {
         const mat_data = get_mat_data(mat, rec);
 
         const srec = new_scatter_record();
-        material_scatter(rec.mat, r, rec, srec);
+        material_scatter(mat, r, rec, srec);
 
-        final_color += current_attenuation * emitted_light(rec.mat, rec);
+        final_color += current_attenuation * emitted_light(mat, rec);
 
         // If the material doesn't scatter, return the accumulated color
         if (!srec.scatter) {
@@ -131,6 +131,7 @@ const ray_color = (r, camera_settings) => {
         const pdf_val = mixed_pdf_value(r, mat, rec, scattered.direction, camera_settings.lights_pdf_weight);
         const scattering_pdf = material_scattering_pdf(r, mat, rec, scattered);
 
+        if (pdf_val <= 0) break;
         r = scattered;
         current_attenuation *= (mat_data.attenuation * scattering_pdf) / pdf_val;
     }

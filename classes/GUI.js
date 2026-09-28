@@ -18,7 +18,7 @@ import { SCENE_SELECT } from '../scenes.js';
  * @property {number} lights_pdf_weight
  */
 
-const default_settings = {
+export const default_settings = {
     scene: 0,
 
     cam_x: 0.0,
@@ -76,7 +76,7 @@ const create_gui = (user_settings = {}) => {
     controllers.lights_pdf_weight.min(0).max(1).step(0.01).listen(false);
 
     gui.get_values = function () {
-        return this.save().controllers;
+        return { ...settings, background: Array.isArray(settings.background) ? [...settings.background] : settings.background };
     };
 
     return {
@@ -91,7 +91,7 @@ const copy_camera_settings = (user_settings = {}, controllers) => {
         ...user_settings,
     };
 
-    Object.keys(settings).map((key) => {
+    Object.keys(settings).forEach((key) => {
         controllers[key].setValue(settings[key]);
     });
 };

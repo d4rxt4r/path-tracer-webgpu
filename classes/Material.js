@@ -1,9 +1,9 @@
-/* global Materials */
-
+import { material_defaults } from '../renderer/SceneData.js';
+import { upload_records } from '../renderer/Upload.js';
 import * as ti from '../lib/taichi.js';
 
 import { new_ray } from './Ray.js';
-import { MAT_TYPE, get_record_from_struct } from '../const.js';
+import { MAT_TYPE } from '../const.js';
 import { random_unit_vec3, reflect_vec3, refract_vec3 } from './Vector.js';
 import { texture_color_value } from './Texture.js';
 
@@ -51,22 +51,22 @@ const new_scatter_record = () => {
     };
 };
 
-const base_mat = get_record_from_struct(Material);
 const init_materials = async (mat_list, world_materials) => {
-    for (let i = 0; i < mat_list.length; i++) {
-        await world_materials.set([i], { ...base_mat, ...mat_list[i] });
-    }
+    await upload_records(
+        world_materials,
+        mat_list.map((mat) => ({ ...material_defaults, ...mat })),
+        material_defaults,
+    );
 };
 
 /**
  * Calculates the scatter direction and albedo of a ray
- * @param {number} mat_index
+ * @param {TMaterial} mat
  * @param {import('./Ray.js').TRay} r_in
  * @param {import('./Hittable.js').HitRecord} rec
  * @param {TScatterRecord} srec
  */
-const material_scatter = (mat_index, r_in, rec, srec) => {
-    const mat = Materials[mat_index];
+const material_scatter = (mat, r_in, rec, srec) => {
     if (mat.type === MAT_TYPE.LAMBERTIAN) {
         lambertian_scatter(r_in, rec, mat, srec);
     } else if (mat.type === MAT_TYPE.METAL) {
@@ -173,10 +173,9 @@ const isotropic_scattering_pdf = () => {
     return 1 / (4 * Math.PI);
 };
 
-const emitted_light = (matId, rec) => {
+const emitted_light = (mat, rec) => {
     let res = [0.0, 0.0, 0.0];
     if (rec.front_face) {
-        const mat = Materials[matId];
         if (mat.type === MAT_TYPE.LIGHT) {
             res = mat.attenuation;
             if (mat.k > 0) {

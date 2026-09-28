@@ -12,6 +12,7 @@ const linear_to_gamma = (linear_component) => {
 };
 
 const hex2rgb = (hex) => {
+    if (Array.isArray(hex)) return { r: hex[0], g: hex[1], b: hex[2] };
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);

@@ -86,7 +86,7 @@ const get_camera_settings = (settings, image_width, image_height) => {
 
     const lookfrom = [cam_x, cam_y, cam_z];
     const lookat = [at_x, at_y, at_z];
-    const vup = [0, 1, 0];
+    let vup = [0, 1, 0];
 
     const camera_center = lookfrom;
 
@@ -96,7 +96,17 @@ const get_camera_settings = (settings, image_width, image_height) => {
     const viewport_height = 2 * h * focus_dist;
     const viewport_width = viewport_height * (image_width / image_height);
 
+    if (
+        ![...lookfrom, ...lookat, vfov, max_depth, defocus_angle, focus_dist].every(Number.isFinite) ||
+        focus_dist <= 0 ||
+        vfov <= 0 ||
+        vfov >= 180 ||
+        max_depth < 1 ||
+        vf.length(vf.sub(lookfrom, lookat)) < 1e-8
+    )
+        throw new Error('Invalid camera settings');
     const w = vf.normalized(vf.sub(lookfrom, lookat));
+    if (Math.abs(w[1]) > 0.999) vup = [0, 0, 1];
     const u = vf.normalized(vf.cross(vup, w));
     const v = vf.cross(w, u);
 
@@ -146,6 +156,8 @@ const get_camera_settings = (settings, image_width, image_height) => {
 };
 
 function init_camera_movement(canvas, controllers, get_values) {
+    const abort = new AbortController();
+    const listen = (target, type, handler, options = {}) => target.addEventListener(type, handler, { ...options, signal: abort.signal });
     let is_moving = false;
     let is_rotating = false;
 
@@ -184,8 +196,9 @@ function init_camera_movement(canvas, controllers, get_values) {
      * @param {KeyboardEvent} event
      */
     function move_camera(event) {
+        if (event.target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target?.tagName)) return;
         event.stopPropagation();
-        const key = event.key;
+        const key = event.key.toLowerCase();
 
         const vals = get_values();
         const forward_vec = vf.scale(vf.sub([vals.at_x, vals.at_y, vals.at_z], [vals.cam_x, vals.cam_y, vals.cam_z]), 0.08);
@@ -263,26 +276,31 @@ function init_camera_movement(canvas, controllers, get_values) {
         y: 0,
     };
 
-    canvas.addEventListener('mousedown', (event) => {
+    listen(canvas, 'mousedown', (event) => {
         prev_mouse_pos.x = event.pageX;
         prev_mouse_pos.y = event.pageY;
         is_moving = true;
         is_rotating = event.button === 2; // Right click
     });
-    canvas.addEventListener('mouseup', () => {
+    listen(window, 'mouseup', () => {
         is_moving = false;
         is_rotating = false;
     });
-    canvas.addEventListener('contextmenu', (event) => event.preventDefault());
-    canvas.addEventListener('mousemove', (event) => {
+    listen(canvas, 'contextmenu', (event) => event.preventDefault());
+    listen(canvas, 'mousemove', (event) => {
         if (is_rotating) {
             rotate_camera(event);
         } else {
             pan_camera(event);
         }
     });
-    canvas.addEventListener('wheel', change_fov, { passive: false });
-    window.addEventListener('keydown', move_camera);
+    listen(canvas, 'wheel', change_fov, { passive: false });
+    listen(window, 'keydown', move_camera);
+    listen(window, 'blur', () => {
+        is_moving = false;
+        is_rotating = false;
+    });
+    return () => abort.abort();
 }
 
 export { CameraSetting, CameraSettingCPU, initialize_camera, get_camera_settings, init_camera_movement };

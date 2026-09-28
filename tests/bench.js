@@ -1,0 +1,14 @@
+import * as ti from '../lib/taichi.js';
+import { create_renderer } from '../renderer/Renderer.js';
+import { SCENE_LIST } from '../scenes.js';
+import { default_settings } from '../classes/GUI.js';
+import { get_camera_settings } from '../classes/Camera.js';
+const params = new URLSearchParams(location.search);
+const width = Number(params.get('width') || 320);
+const scene = SCENE_LIST[Number(params.get('scene') || 0)];
+const started = performance.now();
+if (params.has('debug')) await ti.init({ printWGSL: true });
+const renderer = await create_renderer(document.getElementById('canvas'), { scenes: SCENE_LIST, width, fused: params.has('fused') });
+const loadTimings = await renderer.loadScene(scene);
+renderer.setCamera(get_camera_settings({ ...default_settings, ...scene.camera }, width, Math.floor((width * 9) / 16)));
+window.bench = { ...renderer, setupMs: performance.now() - started, loadTimings };

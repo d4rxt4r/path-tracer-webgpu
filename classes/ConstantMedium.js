@@ -1,4 +1,4 @@
-/* global Scene, Materials */
+/* global Materials */
 import * as ti from '../lib/taichi.js';
 
 import { MAX_F32, OBJ_TYPE } from '../const.js';
@@ -26,7 +26,7 @@ const hit_constant_medium = (medium, r, ray_t, rec) => {
         type = OBJ_TYPE.SPHERE;
     }
 
-    let res = true;
+    let res = type === OBJ_TYPE.SPHERE;
     if (type === OBJ_TYPE.SPHERE && !hit_sphere(medium, ray, get_interval_universal(), rec1)) {
         res = false;
     }
@@ -44,10 +44,10 @@ const hit_constant_medium = (medium, r, ray_t, rec) => {
 
         if (res) {
             rec1.t = Math.max(rec1.t, 0);
-            const ray_length = r.direction.normSqr();
+            const ray_length = r.direction.norm();
             const distance_inside_boundary = (rec2.t - rec1.t) * ray_length;
             const neg_inv_density = -1.0 / Materials[medium.mat].k;
-            const hit_distance = neg_inv_density * Math.log(ti.random());
+            const hit_distance = neg_inv_density * Math.log(ti.max(ti.random(), 1e-8));
             if (hit_distance > distance_inside_boundary) {
                 res = false;
             }

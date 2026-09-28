@@ -742,13 +742,13 @@ const Scene_8 = {
         {
             type: MAT_TYPE.ISOTROPIC,
             attenuation: [0.0, 0.0, 0.0],
-            k: 0.001,
+            k: 0.01,
         },
         // white smoke - 5
         {
             type: MAT_TYPE.ISOTROPIC,
             attenuation: [1.0, 1.0, 1.0],
-            k: 0.001,
+            k: 0.01,
         },
     ],
     camera: {
