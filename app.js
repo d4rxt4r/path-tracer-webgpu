@@ -10,6 +10,8 @@ async function main() {
     const { gui, controllers } = create_gui(SCENE_LIST[0].camera);
     const stats = new Stats();
     document.body.appendChild(stats.dom);
+    // Allow the static loading status to paint before synchronous kernel initialization.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const renderer = await create_renderer(htmlCanvas, { scenes: SCENE_LIST });
     const loop = new RenderLoop(renderer, {
         schedule: (callback) =>
@@ -22,6 +24,7 @@ async function main() {
             document.getElementById('render-error')?.remove();
         },
         onError: show_error,
+        onLoadingChange: set_loading,
     });
     let copying = false;
     const request_render = () => {
@@ -64,7 +67,13 @@ async function main() {
     request_render();
 }
 
+function set_loading(loading) {
+    document.getElementById('scene-loading').hidden = !loading;
+    document.getElementById('render-viewport').setAttribute('aria-busy', String(loading));
+}
+
 function show_error(error) {
+    set_loading(false);
     console.error(error);
     let status = document.getElementById('render-error');
     if (!status) {

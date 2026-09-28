@@ -1,5 +1,6 @@
 import { openBrowser, seededPage, sourceProvenance } from './browser.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { check_loading } from './loading-checks.mjs';
 const run = await openBrowser();
 try {
     const page = await seededPage(run.browser);
@@ -36,41 +37,7 @@ try {
         results.push(await stress.evaluate(() => window.stressResults));
         await stress.close();
     }
-    const app = await seededPage(run.browser, ['Invalid camera settings']);
-    const appErrors = [];
-    app.on('pageerror', (error) => appErrors.push(error.stack));
-    app.on('console', (msg) => {
-        if (msg.type() === 'error' && !msg.text().includes('Invalid camera settings')) appErrors.push(msg.text());
-    });
-    await app.goto(run.origin);
-    await app.evaluate(async () => {
-        const ti = await import('/lib/taichi.js');
-        const present = ti.Canvas.prototype.setImage;
-        window.presented = 0;
-        ti.Canvas.prototype.setImage = async function (...args) {
-            await present.apply(this, args);
-            window.presented++;
-        };
-    });
-    await app.waitForFunction(() => window.presented > 0, { timeout: 120000 });
-    const control = (name) => app.locator('.controller').filter({ has: app.getByText(name, { exact: true }) });
-    const number = async (name, value) => {
-        const input = control(name).locator('input[type="text"]');
-        await input.fill(String(value));
-        await input.press('Enter');
-    };
-    await number('spp', 2);
-    await control('scene').locator('select').selectOption({ label: 'Cornell Box (Fog Test)' });
-    await number('cam_z', 0);
-    await app.getByRole('alert').waitFor();
-    await number('cam_z', -800);
-    await app.getByRole('alert').waitFor({ state: 'hidden', timeout: 120000 });
-    results.push({
-        name: 'native application controls switch scenes and recover from invalid camera settings',
-        pass: appErrors.length === 0,
-        value: appErrors.join('\n'),
-    });
-    await app.close();
+    results.push(...(await check_loading(run)));
     const unsupported = await seededPage(run.browser, ['does not support WebGPU']);
     await unsupported.addInitScript(() => Object.defineProperty(navigator, 'gpu', { value: undefined }));
     await unsupported.goto(run.origin);
@@ -78,6 +45,12 @@ try {
     results.push({
         name: 'unsupported WebGPU shows a clear application error',
         pass: (await unsupported.getByRole('alert').textContent()).includes('WebGPU'),
+    });
+    results.push({
+        name: 'unsupported WebGPU clears loading and busy status',
+        pass:
+            !(await unsupported.locator('#scene-loading').isVisible()) &&
+            (await unsupported.locator('#render-viewport').getAttribute('aria-busy')) === 'false',
     });
     await unsupported.close();
     await mkdir('artifacts', { recursive: true });

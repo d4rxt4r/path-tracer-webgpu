@@ -9,12 +9,61 @@
             padding: 0;
             margin: 0;
         }
+        .render-shell {
+            position: relative;
+            display: inline-block;
+        }
+        #canvas {
+            display: block;
+            cursor: move;
+        }
+        #scene-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            background: rgba(20, 20, 24, 0.9);
+            color: #fff;
+            font: 14px system-ui, sans-serif;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        #scene-loading[hidden] {
+            display: none;
+        }
+        .loading-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: loading-spin 0.8s linear infinite;
+        }
+        @keyframes loading-spin {
+            to { transform: rotate(360deg); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .loading-spinner { animation: none; }
+        }
     </style>
     <script type="text/javascript" src="lib/stats.min.js"></script>
     <script type="text/javascript" src="lib/lil.gui.js"></script>
 </head>
 <body>
-    <canvas id="canvas" style="cursor: move;"></canvas>
+    <div class="render-shell">
+        <div id="render-viewport" role="region" aria-label="Scene renderer" aria-busy="true">
+            <canvas id="canvas" width="1200" height="675"></canvas>
+        </div>
+        <div id="scene-loading" role="status" lang="ru">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Загрузка сцены…</span>
+        </div>
+    </div>
     <script type="module" src="app.js"></script>
 </body>
 </html>

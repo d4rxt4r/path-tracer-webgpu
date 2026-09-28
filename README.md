@@ -32,6 +32,10 @@ Raw JSON and canvas screenshots go to ignored `artifacts/`. See [review and reco
 
 `create_renderer(canvas, { scenes, width, height, fused })` sizes reusable fields from the supplied scene set. `loadScene(scene)` prepares fresh data on every load and returns preparation/upload timings. `setCamera(camera)`, `reset()` and `renderSample()` configure and accumulate output. `RenderLoop.update({ scene, camera, spp })` replaces pending work; `stop()` cancels future frames. Updates should provide a new camera snapshot. Call `loadScene` to apply scene edits.
 
+`RenderLoop` accepts an optional `onLoadingChange(boolean)` callback. Loading lasts until the first current-scene frame is presented; stale completions cannot dismiss a newer request. The application shows a loading status during startup and scene switches, clears it on errors, and keeps camera updates and sample accumulation unobstructed. The spinner respects reduced-motion preferences.
+
+Quad surfaces remain two-sided; light emission is front-facing only. Existing presets depend on two-sided intersection, so global back-face culling is intentionally disabled.
+
 Field capacity is fixed for a renderer's lifetime. Larger scenes fail before upload; configure the intended scene set at creation. Taichi's runtime/kernel scope is global and its public API does not provide per-field disposal or a device-loss subscription. The application reuses fields and compiled kernels rather than repeatedly allocating renderers. Async failures stop rendering and appear in a recoverable status message.
 
 CPU tests use Node's built-in runner; GPU tests run real Taichi kernels plus all preset scenes in Chrome. ESLint integrates Prettier: four spaces, single quotes, trailing commas, 140 columns. Vendored `lib/` files are excluded from formatting and remain unchanged.

@@ -6,19 +6,22 @@ export class RenderLoop {
             schedule = (callback) => globalThis.requestAnimationFrame(callback),
             cancel = (id) => globalThis.cancelAnimationFrame(id),
             onFrame = () => {},
+            onLoadingChange = () => {},
             onError = console.error,
         } = {},
     ) {
-        Object.assign(this, { renderer, schedule, cancel, onFrame, onError });
+        Object.assign(this, { renderer, schedule, cancel, onFrame, onLoadingChange, onError });
         this.revision = 0;
         this.frame = null;
         this.busy = false;
         this.desired = null;
+        this.loading = false;
     }
 
     update(state) {
         this.revision++;
         this.desired = state;
+        this.setLoading(state.scene !== this.presentedScene);
         if (this.frame !== null) this.cancel(this.frame);
         this.frame = null;
         this.queue();
@@ -29,6 +32,13 @@ export class RenderLoop {
         this.desired = null;
         if (this.frame !== null) this.cancel(this.frame);
         this.frame = null;
+        this.setLoading(false);
+    }
+
+    setLoading(value) {
+        if (this.loading === value) return;
+        this.loading = value;
+        this.onLoadingChange(value);
     }
 
     queue() {
@@ -56,6 +66,8 @@ export class RenderLoop {
             if (revision !== this.revision) return;
             await this.renderer.renderSample();
             if (revision !== this.revision) return;
+            this.presentedScene = state.scene;
+            this.setLoading(false);
             this.onFrame(this.renderer.samples);
             if (this.renderer.samples >= (state.preview ? 1 : state.spp)) this.desired = null;
         } catch (error) {
