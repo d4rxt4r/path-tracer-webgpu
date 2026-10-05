@@ -67,6 +67,7 @@ const hit_scene = (r, ray_t, rec) => {
                 const obj = Scene[current_node.primitive_index];
                 let hit_this = hit_object(obj, r, get_interval(ray_t.min, current_t.max), rec);
                 if (hit_this) {
+                    rec.object_index = current_node.primitive_index;
                     hit_anything = true;
                     current_t.max = rec.t;
                     ray_t = current_t;

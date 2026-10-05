@@ -1,3 +1,4 @@
+/* global emission_enabled */
 import { material_defaults } from '../renderer/SceneData.js';
 import { upload_records } from '../renderer/Upload.js';
 import * as ti from '../lib/taichi.js';
@@ -20,6 +21,13 @@ const Material = ti.types.struct({
     attenuation: ti.types.vector(ti.f32, 3),
     k: ti.f32,
     tex: ti.i32,
+    height_tex: ti.i32,
+    height_scale: ti.f32,
+    normal_tex: ti.i32,
+    normal_scale: ti.f32,
+    emission_tex: ti.i32,
+    emission_strength: ti.f32,
+    emission_threshold: ti.f32,
 });
 
 /**
@@ -107,6 +115,7 @@ const lambertian_scattering_pdf = (r_in, rec, scattered) => {
     const cos_theta = ti.dot(rec.normal, ti.normalized(scattered.direction));
     let res = cos_theta / Math.PI;
     if (cos_theta < 0) res = 0;
+    if (rec.mapped && ti.dot(scattered.direction, rec.geometric_normal) <= 0) res = 0;
     return res;
 };
 
@@ -122,6 +131,7 @@ const metal_scatter = (r_in, rec, mat, srec) => {
     reflected = ti.normalized(reflected) + mat.k * random_unit_vec3();
     const scattered = new_ray(rec.p, reflected, r_in.time);
     srec.scatter = ti.dot(scattered.direction, rec.normal) > 0;
+    if (rec.mapped) srec.scatter = srec.scatter && ti.dot(scattered.direction, rec.geometric_normal) > 0;
     srec.skip_pdf = true;
     srec.skip_pdf_ray = scattered;
 };
@@ -158,6 +168,12 @@ const dielectric_scatter = (r_in, rec, mat, srec) => {
     let direction = refract_vec3(unit_direction, rec.normal, ri);
     if (cannot_refract || material_reflectance(cos_theta, ri) > ti.random()) {
         direction = reflect_vec3(unit_direction, rec.normal);
+        if (rec.mapped && ti.dot(direction, rec.geometric_normal) <= 0) direction = reflect_vec3(unit_direction, rec.geometric_normal);
+    } else if (rec.mapped && ti.dot(direction, rec.geometric_normal) >= 0) {
+        const geometric_cosine = ti.max(0.0, ti.min(ti.dot(-unit_direction, rec.geometric_normal), 1.0));
+        const geometric_sine = Math.sqrt(ti.max(0.0, 1.0 - geometric_cosine * geometric_cosine));
+        direction = refract_vec3(unit_direction, rec.geometric_normal, ri);
+        if (ri * geometric_sine > 1.0) direction = reflect_vec3(unit_direction, rec.geometric_normal);
     }
 
     srec.scatter = true;
@@ -173,18 +189,28 @@ const isotropic_scattering_pdf = () => {
     return 1 / (4 * Math.PI);
 };
 
-const emitted_light = (mat, rec) => {
+const emitted_light_value = (mat, rec, attenuation) => {
     let res = [0.0, 0.0, 0.0];
     if (rec.front_face) {
         if (mat.type === MAT_TYPE.LIGHT) {
-            res = mat.attenuation;
+            res = attenuation;
             if (mat.k > 0) {
                 res *= mat.k;
+            }
+        }
+        if (ti.static(emission_enabled)) {
+            if (mat.emission_tex > 0 && mat.emission_strength > 0) {
+                const emission = texture_color_value(mat.emission_tex, rec.u, rec.v, rec.p);
+                const luminance = ti.dot(emission, [0.2126, 0.7152, 0.0722]);
+                if (luminance > mat.emission_threshold)
+                    res += mat.emission_strength * emission * (1.0 - mat.emission_threshold / luminance);
             }
         }
     }
     return res;
 };
+
+const emitted_light = (mat, rec) => emitted_light_value(mat, rec, get_mat_data(mat, rec).attenuation);
 
 const get_mat_data = (mat, rec) => {
     let attenuation = mat.attenuation;
@@ -208,6 +234,7 @@ export {
     dielectric_scatter,
     isotropic_scatter,
     emitted_light,
+    emitted_light_value,
     material_scattering_pdf,
     lambertian_scattering_pdf,
     isotropic_scattering_pdf,

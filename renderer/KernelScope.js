@@ -32,6 +32,7 @@ import {
     dielectric_scatter,
     isotropic_scatter,
     emitted_light,
+    emitted_light_value,
     material_scattering_pdf,
     lambertian_scattering_pdf,
     isotropic_scattering_pdf,
@@ -54,13 +55,14 @@ import {
     get_rotation_matrix,
 } from '../classes/Vector.js';
 import { get_interval, get_interval_universal, interval_clamp, interval_contains, interval_surrounds } from '../classes/Interval.js';
-import { texture_color_value, get_solid_texture_value, get_checker_texture_value } from '../classes/Texture.js';
+import { texture_color_value, get_solid_texture_value, get_checker_texture_value, image_texture_value } from '../classes/Texture.js';
+import { surface_derivatives, apply_surface_maps } from '../classes/SurfaceMaps.js';
 import { get_quad_bbox, get_quad_d, get_quad_normal, get_quad_w, hit_quad, quad_is_interior } from '../classes/Quad.js';
 import { hit_constant_medium } from '../classes/ConstantMedium.js';
 import { hit_box, box_local_ray, box_interval } from '../classes/Box.js';
 
 export function register_kernel_scope(fields) {
-    ti.addToKernelScope(fields);
+    ti.addToKernelScope({ image_maps_enabled: false, emission_enabled: fields.image_maps_enabled ?? false, ...fields });
     ti.addToKernelScope({
         EPS,
         MAX_F32,
@@ -131,12 +133,16 @@ export function register_kernel_scope(fields) {
         dielectric_scatter,
         isotropic_scatter,
         emitted_light,
+        emitted_light_value,
         material_scattering_pdf,
         lambertian_scattering_pdf,
         isotropic_scattering_pdf,
         get_mat_data,
         // Textures
         texture_color_value,
+        image_texture_value,
+        surface_derivatives,
+        apply_surface_maps,
         get_solid_texture_value,
         get_checker_texture_value,
         // Vector

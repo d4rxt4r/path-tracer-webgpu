@@ -758,7 +758,94 @@ const Scene_8 = {
     },
 };
 
-const SCENE_LIST = [Scene_0, Scene_1, Scene_2, Scene_3, Scene_4, Scene_5, Scene_6, Scene_7, Scene_8];
+const EarthStars = Array.from({ length: 80 }, (_, index) => {
+    const noise = (offset) => {
+        const value = Math.sin((index + 1) * 127.1 + offset * 311.7) * 43758.5453;
+        return value - Math.floor(value);
+    };
+    return {
+        type: OBJ_TYPE.SPHERE,
+        center: [-80, -4.8 + (2 * noise(1) - 1) * 27, (2 * noise(2) - 1) * 47],
+        radius: 0.06 + 0.12 * noise(3),
+        mat: 5 + (index % 3),
+    };
+});
+
+const Earth = {
+    name: 'Earth-mapped sphere',
+    objects: [
+        { type: OBJ_TYPE.SPHERE, center: [0, 0, 0], radius: 1, mat: 0 },
+        { type: OBJ_TYPE.SPHERE, center: [-18, 3, 5.8], radius: 1.2, mat: 1 },
+        { type: OBJ_TYPE.SPHERE, center: [-4, 1.4, -3], radius: 0.42, mat: 2 },
+        // Soft lights sit outside the camera view; the distant Sun provides the backdrop.
+        { type: OBJ_TYPE.QUAD, Q: [4, 2, 2], u: [0, 0, 4], v: [0, 4, 0], mat: 3 },
+        { type: OBJ_TYPE.QUAD, Q: [2, -3, -5], u: [0, 0, 3], v: [0, 2, 0], mat: 4 },
+        ...EarthStars,
+    ],
+    lights: [
+        { type: OBJ_TYPE.QUAD, Q: [4, 2, 2], u: [0, 0, 4], v: [0, 4, 0] },
+        { type: OBJ_TYPE.QUAD, Q: [2, -3, -5], u: [0, 0, 3], v: [0, 2, 0] },
+    ],
+    textures: [
+        {
+            type: TEX_TYPE.IMAGE,
+            src: 'res/earth/2k_earth_nightmap.jpg',
+            wrap_u: 'repeat',
+        },
+        {
+            type: TEX_TYPE.IMAGE,
+            src: 'res/earth/2k_earth_normal_map.tif',
+            color_space: 'linear',
+            wrap_u: 'repeat',
+        },
+        {
+            type: TEX_TYPE.IMAGE,
+            src: 'res/earth/2k_earth_daymap.jpg',
+            wrap_u: 'repeat',
+        },
+        {
+            type: TEX_TYPE.IMAGE,
+            src: 'res/moon/lroc_color_poles_1k.jpg',
+            wrap_u: 'repeat',
+        },
+    ],
+    materials: [
+        {
+            type: MAT_TYPE.LAMBERTIAN,
+            tex: 3,
+            normal_tex: 2,
+            normal_scale: 1.2,
+            emission_tex: 1,
+            emission_strength: 0.75,
+            emission_threshold: 0.007,
+        },
+        { type: MAT_TYPE.LIGHT, attenuation: [1, 0.7, 0.18], k: 4 },
+        { type: MAT_TYPE.LAMBERTIAN, tex: 4 },
+        { type: MAT_TYPE.LIGHT, attenuation: [1, 0.96, 0.84], k: 14 },
+        { type: MAT_TYPE.LIGHT, attenuation: [0.42, 0.62, 1], k: 3 },
+        { type: MAT_TYPE.LIGHT, attenuation: [1, 0.83, 0.58], k: 1.4 },
+        { type: MAT_TYPE.LIGHT, attenuation: [0.55, 0.72, 1], k: 1.4 },
+        { type: MAT_TYPE.LIGHT, attenuation: [0.6, 0.65, 0.7], k: 0.6 },
+    ],
+    camera: {
+        scene: 9,
+        cam_x: 5.8,
+        cam_y: 0.35,
+        cam_z: 0,
+        at_x: 0,
+        at_y: 0,
+        at_z: 0,
+        background: [0, 0, 0],
+        vfov: 34,
+        defocus_angle: 0,
+        focus_dist: 5.8,
+        spp: 500,
+        max_depth: 8,
+        lights_pdf_weight: 0.5,
+    },
+};
+
+const SCENE_LIST = [Scene_0, Scene_1, Scene_2, Scene_3, Scene_4, Scene_5, Scene_6, Scene_7, Scene_8, Earth];
 const SCENE_SELECT = Object.fromEntries(SCENE_LIST.map((scene, key) => [scene.name, key]));
 
 export { SCENE_LIST, SCENE_SELECT };

@@ -19,6 +19,7 @@ const MAT_TYPE = {
 const TEX_TYPE = {
     SOLID: 1,
     CHECKER: 2,
+    IMAGE: 3,
 };
 
 const get_record_from_struct = (struct) => {

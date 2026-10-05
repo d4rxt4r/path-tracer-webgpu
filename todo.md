@@ -8,5 +8,4 @@
 # Path tracer features to add
 - Noise
 - Scaling
-- Textures (from image) + Height Maps
 - Import meshes

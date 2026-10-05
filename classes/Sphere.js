@@ -85,7 +85,10 @@ const hit_sphere = (sphere, r, ray_t, rec) => {
             rec.p = ray_at(r, rec.t);
             const outward_normal = (rec.p - current_center) / sphere.radius;
             set_face_normal(rec, r, outward_normal);
-            get_sphere_uv(outward_normal, rec);
+            let uv_normal = outward_normal;
+            if (sphere.uv_rotated === 1)
+                uv_normal = [ti.dot(outward_normal, sphere.u), ti.dot(outward_normal, sphere.v), ti.dot(outward_normal, sphere.normal)];
+            get_sphere_uv(uv_normal, rec);
             rec.mat = sphere.mat;
         }
     }

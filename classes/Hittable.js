@@ -17,6 +17,9 @@ const new_hit_record = () => {
         p: [0.0, 0.0, 0.0],
         // normal
         normal: [0.0, 0.0, 0.0],
+        geometric_normal: [0.0, 0.0, 0.0],
+        mapped: false,
+        object_index: -1,
         // time
         t: 0.0,
         // front face
@@ -63,9 +66,10 @@ const Hittable = ti.types.struct({
     type: ti.i32,
     boundary_type: ti.i32,
     box_index: ti.i32,
+    uv_rotated: ti.i32,
     // material
     mat: ti.i32,
-    // quad
+    // Quad basis; rotated spheres reuse u/v/normal for their local UV axes.
     Q: ti.types.vector(ti.f32, 3),
     u: ti.types.vector(ti.f32, 3),
     v: ti.types.vector(ti.f32, 3),

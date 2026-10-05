@@ -7,20 +7,24 @@ export async function upload_records(field, records, fallback) {
     await field.fromArray(Array.from({ length: capacity }, (_, i) => records[i] ?? fallback));
 }
 
-export async function upload_scene(prepared, fields) {
-    const uploads = [
-        [fields.Scene, prepared.objects, object_defaults],
-        [fields.Lights, prepared.lights, object_defaults],
-        [fields.Materials, prepared.materials, material_defaults],
-        [fields.Textures, prepared.textures, texture_defaults],
-        [fields.BVHTree, prepared.bvh, node_defaults],
-        [fields.Boxes, prepared.boxes, box_defaults],
-    ];
-    // Validate every capacity before any field is changed.
-    for (const [field, records] of uploads) {
+const scene_uploads = (prepared, fields) => [
+    [fields.Scene, prepared.objects, object_defaults],
+    [fields.Lights, prepared.lights, object_defaults],
+    [fields.Materials, prepared.materials, material_defaults],
+    [fields.Textures, prepared.textures, texture_defaults],
+    [fields.BVHTree, prepared.bvh, node_defaults],
+    [fields.Boxes, prepared.boxes, box_defaults],
+];
+
+export function validate_scene_capacity(prepared, fields) {
+    for (const [field, records] of scene_uploads(prepared, fields)) {
         if (records.length > field.dimensions[0])
             throw new Error(`Scene exceeds field capacity: ${records.length} > ${field.dimensions[0]}`);
     }
-    for (const [field, records, fallback] of uploads) await upload_records(field, records, fallback);
+}
+
+export async function upload_scene(prepared, fields) {
+    validate_scene_capacity(prepared, fields);
+    for (const [field, records, fallback] of scene_uploads(prepared, fields)) await upload_records(field, records, fallback);
     await fields.COUNTER.fromArray(prepared.counts);
 }

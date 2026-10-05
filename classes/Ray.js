@@ -1,11 +1,12 @@
-/* global Materials */
+/* global Materials, Scene, image_maps_enabled */
 
 import * as ti from '../lib/taichi.js';
 
 import { new_hit_record } from './Hittable.js';
 import { hit_scene } from './Scene.js';
 import { MAX_F32 } from '../const.js';
-import { new_scatter_record, material_scatter, material_scattering_pdf, emitted_light, get_mat_data } from './Material.js';
+import { new_scatter_record, material_scatter, material_scattering_pdf, emitted_light_value, get_mat_data } from './Material.js';
+import { apply_surface_maps } from './SurfaceMaps.js';
 import { random_in_unit_disk_vec3, get_rotation_matrix } from './Vector.js';
 import { get_interval } from './Interval.js';
 import { mixed_pdf_value, mixed_pdf_generate } from './PDF.js';
@@ -107,12 +108,16 @@ const ray_color = (r, camera_settings) => {
         }
 
         const mat = Materials[rec.mat];
+        if (ti.static(image_maps_enabled)) {
+            if ((mat.normal_tex > 0 && mat.normal_scale > 0) || (mat.height_tex > 0 && mat.height_scale > 0))
+                apply_surface_maps(Scene[rec.object_index], r, rec, mat);
+        }
         const mat_data = get_mat_data(mat, rec);
 
         const srec = new_scatter_record();
         material_scatter(mat, r, rec, srec);
 
-        final_color += current_attenuation * emitted_light(mat, rec);
+        final_color += current_attenuation * emitted_light_value(mat, rec, mat_data.attenuation);
 
         // If the material doesn't scatter, return the accumulated color
         if (!srec.scatter) {

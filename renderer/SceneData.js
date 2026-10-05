@@ -7,6 +7,7 @@ export const object_defaults = {
     type: 0,
     boundary_type: 0,
     box_index: -1,
+    uv_rotated: 0,
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
     mat: 0,
@@ -21,8 +22,29 @@ export const object_defaults = {
     center: [0, 0, 0],
     center2: [0, 0, 0],
 };
-export const material_defaults = { type: MAT_TYPE.LAMBERTIAN, attenuation: [0, 0, 0], k: 0, tex: 0 };
-export const texture_defaults = { type: TEX_TYPE.SOLID, k: 1, color: [0, 0, 0], color2: [0, 0, 0] };
+export const material_defaults = {
+    type: MAT_TYPE.LAMBERTIAN,
+    attenuation: [0, 0, 0],
+    k: 0,
+    tex: 0,
+    height_tex: 0,
+    height_scale: 0,
+    normal_tex: 0,
+    normal_scale: 1,
+    emission_tex: 0,
+    emission_strength: 1,
+    emission_threshold: 0,
+};
+export const texture_defaults = {
+    type: TEX_TYPE.SOLID,
+    k: 1,
+    color: [0, 0, 0],
+    color2: [0, 0, 0],
+    image_rect: [0, 0, 1, 1],
+    wrap_u: 0,
+    wrap_v: 0,
+    color_space: 'srgb',
+};
 export const node_defaults = {
     parent_index: -1,
     is_leaf: 1,
@@ -44,9 +66,18 @@ const normalize_object = (object, boxes) => {
         )
             throw new Error('Medium transforms must be specified on its boundary');
         const geometry = normalize_object(boundary, boxes);
-        return { ...geometry, type: OBJ_TYPE.MEDIUM, mat: object.mat ?? 0, boundary_type: boundary.type };
+        return {
+            ...geometry,
+            type: OBJ_TYPE.MEDIUM,
+            mat: object.mat ?? 0,
+            boundary_type: boundary.type,
+        };
     }
-    const result = { ...object_defaults, ...object, center2: object.center2 ?? object.center ?? [0, 0, 0] };
+    const result = {
+        ...object_defaults,
+        ...object,
+        center2: object.center2 ?? object.center ?? [0, 0, 0],
+    };
     if (result.type === OBJ_TYPE.BOX) {
         const geometry = prepare_box(object);
         result.box_index = boxes.length;
@@ -72,6 +103,12 @@ const normalize_object = (object, boxes) => {
         result.plane_d = vf.dot(result.normal, result.Q);
         result.quad_w = vf.scale(cross, 1 / vf.dot(cross, cross));
     } else {
+        if (result.rotation.some((value) => value !== 0)) {
+            result.uv_rotated = 1;
+            result.u = rotate([1, 0, 0]);
+            result.v = rotate([0, 1, 0]);
+            result.normal = rotate([0, 0, 1]);
+        }
         result.center = position(result.center);
         result.center2 = position(result.center2);
     }
@@ -81,8 +118,19 @@ const normalize_object = (object, boxes) => {
 };
 
 export function prepare_scene(scene) {
-    const materials = (scene.materials ?? []).map((material) => ({ ...material_defaults, ...material }));
-    const textures = (scene.textures ?? []).map((texture) => ({ ...texture_defaults, ...texture }));
+    const materials = (scene.materials ?? []).map((material) => ({
+        ...material_defaults,
+        ...material,
+    }));
+    const textures = (scene.textures ?? []).map((texture) => {
+        const result = { ...texture_defaults, ...texture };
+        for (const key of ['wrap_u', 'wrap_v']) {
+            if (texture[key] !== undefined && !['clamp', 'repeat'].includes(texture[key]))
+                throw new Error('Invalid image texture wrap mode');
+            result[key] = texture[key] === 'repeat' ? 1 : 0;
+        }
+        return result;
+    });
     const boxes = [];
     const objects = scene.objects.map((object) => normalize_object(object, boxes));
     if ((scene.lights ?? []).some((light) => light.type === OBJ_TYPE.MEDIUM)) throw new Error('Unsupported light sampling geometry');
@@ -92,12 +140,30 @@ export function prepare_scene(scene) {
     for (const material of materials) {
         finite_vector(material.attenuation, 'attenuation');
         if (!Object.values(MAT_TYPE).includes(material.type) || !Number.isFinite(material.k)) throw new Error('Invalid material');
-        if (!Number.isInteger(material.tex) || material.tex < 0 || material.tex > textures.length)
-            throw new Error('Invalid material texture reference');
+        for (const key of ['tex', 'height_tex', 'normal_tex', 'emission_tex']) {
+            if (!Number.isInteger(material[key]) || material[key] < 0 || material[key] > textures.length)
+                throw new Error(`Invalid material texture reference: ${key}`);
+        }
+        for (const key of ['height_scale', 'normal_scale', 'emission_strength', 'emission_threshold']) {
+            if (!Number.isFinite(material[key]) || material[key] < 0) throw new Error(`Invalid map/emission parameter: ${key}`);
+        }
+        for (const key of ['height_tex', 'normal_tex']) {
+            if (material[key] && textures[material[key] - 1].type !== TEX_TYPE.IMAGE)
+                throw new Error('Surface maps require image textures');
+        }
+        if (material.normal_tex && textures[material.normal_tex - 1].color_space !== 'linear')
+            throw new Error('Normal map texture must use linear color_space');
+        if (material.type === MAT_TYPE.ISOTROPIC && (material.height_tex || material.normal_tex))
+            throw new Error('Surface maps cannot be used with a medium/isotropic material');
         if ([MAT_TYPE.DIELECTRIC, MAT_TYPE.ISOTROPIC].includes(material.type) && material.k <= 0)
             throw new Error('Refractive index/density must be positive');
     }
     for (const texture of textures) {
+        if (
+            texture.type === TEX_TYPE.IMAGE &&
+            (typeof texture.src !== 'string' || !texture.src.trim() || !['srgb', 'linear'].includes(texture.color_space))
+        )
+            throw new Error('Invalid image texture source/color_space');
         finite_vector(texture.color, 'texture color');
         finite_vector(texture.color2, 'texture color2');
         if (

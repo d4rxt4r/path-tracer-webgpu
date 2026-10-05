@@ -2,6 +2,7 @@ import { openBrowser, seededPage, sourceProvenance } from './browser.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { check_loading } from './loading-checks.mjs';
 import { check_bvh_controls } from './bvh-checks.mjs';
+import { check_image_loading } from './image-checks.mjs';
 const run = await openBrowser();
 try {
     const page = await seededPage(run.browser);
@@ -13,6 +14,10 @@ try {
     if (!adapter || adapter.fallback) throw new Error('Hardware WebGPU adapter required');
     console.log('Adapter:', JSON.stringify(adapter));
     const results = await page.evaluate(() => window.gpuResults);
+    const images = await seededPage(run.browser);
+    await images.goto(`${run.origin}/tests/image-gpu.html`);
+    results.push(...(await images.evaluate(() => window.imageResults)));
+    await images.close();
     const boxes = await seededPage(run.browser);
     await boxes.goto(`${run.origin}/tests/box-gpu.html`);
     results.push(...(await boxes.evaluate(() => window.boxResults)));
@@ -44,6 +49,7 @@ try {
     }
     results.push(...(await check_loading(run)));
     results.push(...(await check_bvh_controls(run)));
+    results.push(...(await check_image_loading(run)));
     const unsupported = await seededPage(run.browser, ['does not support WebGPU']);
     await unsupported.addInitScript(() => Object.defineProperty(navigator, 'gpu', { value: undefined }));
     await unsupported.goto(run.origin);
